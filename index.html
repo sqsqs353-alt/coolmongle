@@ -3,46 +3,40 @@
 <head>
     <title>Google Docs</title>
     <style>
-        :root { 
-            --bg: #020617; 
-            --card: #0f172a; 
-            --accent: #3b82f6; 
-            --text: #f8fafc; 
-        }
-        body, html { 
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            background: var(--bg); color: var(--text); font-family: sans-serif;
+        :root { --bg: #020617; --card: #0f172a; --accent: #3b82f6; --text: #f8fafc; }
+        body { 
+            background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; 
             background-size: cover; background-position: center; background-attachment: fixed;
         }
-        .navbar { background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); position: sticky; top: 0; z-index: 1000; }
+        .navbar { background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; position: sticky; top: 0; z-index: 1000; }
         .container { padding: 30px; max-width: 1400px; margin: 0 auto; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
-        .game-card { background: var(--card); border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; border: 1px solid transparent; transition: 0.3s; position: relative; }
+        .game-card { background: var(--card); border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; border: 1px solid #1e293b; transition: 0.3s; position: relative; }
         .game-card:hover { border-color: var(--accent); transform: translateY(-3px); }
-        .fav-star { position: absolute; top: 8px; right: 8px; cursor: pointer; color: rgba(255,255,255,0.2); }
-        .fav-star.active { color: #fbbf24; }
-        #gameFrame { width: 100%; height: calc(100vh - 70px); border: none; display: none; }
+        #gameFrame { width: 100%; height: calc(100vh - 70px); border: none; display: none; background: white; }
         .modal { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .btn-ui { padding: 10px 20px; background: var(--accent); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .section-header { color: var(--accent); border-left: 4px solid var(--accent); padding-left: 10px; margin-top: 40px; }
     </style>
 </head>
 <body>
     <div id="authModal" class="modal">
-        <h1 id="title">MONGLE</h1>
+        <h1 style="color:var(--accent); font-size: 3rem;">MONGLE</h1>
         <div id="loginBox">
             <input type="text" id="userInput" placeholder="Username..." style="padding:12px; border-radius:8px; border:1px solid #333; background:#111; color:#fff;">
             <button class="btn-ui" onclick="checkUser()">Sign In</button>
         </div>
         <div id="passBox" style="display:none;">
-            <input type="password" id="passInput" placeholder="Password...">
+            <p>Password for Mongle Account:</p>
+            <input type="password" id="passInput" placeholder="Password..." style="padding:12px; border-radius:8px; border:1px solid #333; background:#111; color:#fff;">
             <button class="btn-ui" onclick="verify()">Verify</button>
         </div>
     </div>
 
     <div id="nav" class="navbar">
-        <div id="clock">00:00:00</div>
+        <div id="clock" style="font-weight:bold; color:#4ade80;">00:00:00</div>
         <div style="display:flex; gap:10px;">
-            <input type="text" id="search" placeholder="Search..." onkeyup="filter()" style="background:#000; color:#fff; border:1px solid #333; padding:5px; border-radius:5px;">
+            <input type="text" id="search" placeholder="Search..." onkeyup="filter()" style="background:#000; color:#fff; border:1px solid #333; padding:8px; border-radius:8px;">
             <button class="btn-ui" onclick="closeGame()" id="backBtn" style="display:none; background:#334155;">Back</button>
             <button class="btn-ui" onclick="cloak()">About:Blank</button>
             <button class="btn-ui" style="background:#ef4444" onclick="location.replace('https://classroom.google.com')">Panic</button>
@@ -50,43 +44,26 @@
     </div>
 
     <div id="arcade" class="container">
-        <div id="favBox" style="display:none;"><h2 style="color:#fbbf24">Favorites</h2><div id="favGrid" class="grid"></div><hr style="opacity:0.1; margin:40px 0;"></div>
+        <div id="favBox" style="display:none;"><h2 style="color:#fbbf24">⭐ Favorites</h2><div id="favGrid" class="grid"></div></div>
+        
+        <div id="fnafBox" style="display:none;"><h2 class="section-header">🐻 FNAF Section</h2><div id="fnafGrid" class="grid"></div></div>
+        
+        <h2 class="section-header">🕹️ Library</h2>
         <div id="mainGrid" class="grid"></div>
     </div>
 
     <iframe id="gameFrame"></iframe>
 
     <script>
-        const CONFIG = {
-            user: "bob154526-hue",
-            repo: "Mongle",
-            pass: "1234"
-        };
+        const USER = "bob154526-hue"; const REPO = "Mongle";
+        const PASS = "1234";
 
-        let isPlaying = false;
-
-        // --- THEME & REFRESH LOGIC ---
-        function applySettings() {
-            const bg = localStorage.getItem('globalBG') || '#020617';
-            const emoji = localStorage.getItem('globalEmoji') || '🎮';
-            const accent = localStorage.getItem('globalAccent') || '#3b82f6';
-            
-            document.documentElement.style.setProperty('--bg', bg);
-            document.documentElement.style.setProperty('--accent', accent);
+        // Apply background from storage
+        if(localStorage.getItem('globalBG')) {
+            const bg = localStorage.getItem('globalBG');
             if(bg.includes('http')) document.body.style.backgroundImage = `url(${bg})`;
             else document.body.style.backgroundColor = bg;
         }
-
-        // Listen for changes from Admin Panel
-        window.addEventListener('storage', (e) => {
-            if (['globalBG', 'globalEmoji', 'globalAccent'].includes(e.key)) {
-                if (!isPlaying) {
-                    location.reload();
-                } else {
-                    console.log("Update pending: Waiting for game to finish...");
-                }
-            }
-        });
 
         // --- AUTH ---
         if(sessionStorage.getItem('auth')) document.getElementById('authModal').style.display = 'none';
@@ -96,83 +73,83 @@
             else if(n) { sessionStorage.setItem('auth', n); location.reload(); }
         }
         function verify() {
-            if(document.getElementById('passInput').value === CONFIG.pass) { sessionStorage.setItem('auth', 'mongle'); location.reload(); }
+            if(document.getElementById('passInput').value === PASS) { sessionStorage.setItem('auth', 'mongle'); location.reload(); }
+            else alert("Wrong Pass");
         }
 
-        // --- GAME LOADING (BLOB FIX) ---
-        async function launch(url) {
-            isPlaying = true;
+        // --- GAME SYSTEM ---
+        function launch(url) {
             document.getElementById('arcade').style.display = 'none';
             document.getElementById('backBtn').style.display = 'block';
             const frame = document.getElementById('gameFrame');
             frame.style.display = 'block';
-
-            try {
-                const res = await fetch(url);
-                const html = await res.text();
-                // Blobs need the correct MIME type to execute scripts
-                const blob = new Blob([html], { type: 'text/html' });
-                frame.src = URL.createObjectURL(blob);
-            } catch(e) { frame.src = url; } // Fallback to direct URL
+            frame.src = url;
         }
 
         function closeGame() {
-            isPlaying = false;
             document.getElementById('gameFrame').style.display = 'none';
             document.getElementById('gameFrame').src = "";
             document.getElementById('arcade').style.display = 'block';
             document.getElementById('backBtn').style.display = 'none';
-            // Check if we need to reload now that game is over
-            applySettings(); 
         }
 
         async function load() {
-            const res = await fetch(`https://api.github.com/repos/${CONFIG.user}/${CONFIG.repo}/contents/`);
+            const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/`);
             const files = await res.json();
             const main = document.getElementById('mainGrid');
+            const fnafGrid = document.getElementById('fnafGrid');
             const favGrid = document.getElementById('favGrid');
             const favs = JSON.parse(localStorage.getItem('mFavs')) || [];
             
-            main.innerHTML = ""; favGrid.innerHTML = "";
-            let hasFavs = false;
+            main.innerHTML = ""; fnafGrid.innerHTML = ""; favGrid.innerHTML = "";
+            let hasFnaf = false, hasFavs = false;
 
-            files.filter(f => f.name.endsWith('.html') && f.name !== 'index.html').forEach(file => {
+            files.forEach(file => {
+                if(!file.name.endsWith('.html') || file.name === 'index.html' || file.name === 'wiki.html') return;
+                
+                const name = file.name.replace('.html','');
                 const isFav = favs.includes(file.name);
                 const card = document.createElement('div');
                 card.className = 'game-card';
-                card.innerHTML = `
-                    <span class="fav-star ${isFav?'active':''}" onclick="toggleFav(event,'${file.name}')">★</span>
-                    <div onclick="launch('${file.download_url}')">
-                        <div style="font-size:40px">${localStorage.getItem('globalEmoji') || '🎮'}</div>
-                        <b>${file.name.replace('.html','')}</b>
-                    </div>
-                `;
-                main.appendChild(card);
-                if(isFav) { hasFavs = true; favGrid.appendChild(card.cloneNode(true)); favGrid.lastChild.onclick = () => launch(file.download_url); }
+                card.innerHTML = `<div onclick="launch('${file.download_url}')">
+                    <div style="font-size:40px">${localStorage.getItem('globalEmoji') || '🎮'}</div>
+                    <b>${name}</b>
+                </div>`;
+                
+                // Add to Favorites
+                if(isFav) {
+                    hasFavs = true;
+                    favGrid.appendChild(card.cloneNode(true)); favGrid.lastChild.onclick = () => launch(file.download_url);
+                }
+
+                // Add to FNAF or Main
+                if(name.toLowerCase().includes('fnaf') || name.toLowerCase().includes('freddy')) {
+                    hasFnaf = true;
+                    fnafGrid.appendChild(card);
+                } else {
+                    main.appendChild(card);
+                }
             });
+
             document.getElementById('favBox').style.display = hasFavs ? 'block' : 'none';
+            document.getElementById('fnafBox').style.display = hasFnaf ? 'block' : 'none';
         }
 
-        function toggleFav(e, f) {
-            e.stopPropagation();
-            let favs = JSON.parse(localStorage.getItem('mFavs')) || [];
-            favs = favs.includes(f) ? favs.filter(x => x !== f) : [...favs, f];
-            localStorage.setItem('mFavs', JSON.stringify(favs));
-            load();
+        function filter() {
+            let q = document.getElementById('search').value.toLowerCase();
+            document.querySelectorAll('.game-card').forEach(c => c.style.display = c.innerText.toLowerCase().includes(q) ? "block" : "none");
         }
 
         function cloak() {
             const win = window.open('about:blank', '_blank');
-            const doc = win.document;
-            const iframe = doc.createElement('iframe');
-            iframe.style = "position:fixed; top:0; left:0; width:100%; height:100%; border:none;";
-            iframe.src = location.href;
-            doc.body.appendChild(iframe);
-            window.location.replace('https://google.com');
+            const iframe = win.document.createElement('iframe');
+            iframe.style = "position:fixed;top:0;left:0;width:100%;height:100%;border:none;";
+            iframe.src = window.location.href;
+            win.document.body.appendChild(iframe);
+            window.location.replace('https://classroom.google.com');
         }
 
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-        applySettings();
         load();
     </script>
 </body>
