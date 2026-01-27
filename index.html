@@ -8,9 +8,6 @@
         :root { --primary: #00ff41; --bg: #000500; --card: rgba(15, 15, 15, 0.95); --accent: #003b00; --gold: #ffd700; --spotlight: #00ccff; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--primary); font-family: 'Courier New', monospace; overflow: hidden; }
 
-        /* BYPASS SCREEN */
-        #lockdownScreen { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #333; font-family: arial, sans-serif; text-align: center; }
-        
         /* AUTH LAYER */
         #authLayer { position: fixed; inset: 0; background: #000; z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .login-card { width: 340px; padding: 40px; border: 1px solid var(--primary); text-align: center; background: #000800; box-shadow: 0 0 20px var(--accent); }
@@ -21,27 +18,22 @@
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; padding: 30px; height: calc(100vh - 120px); overflow-y: auto; align-content: start; }
         
         /* SIDE PANEL */
-        .side-panel { position: fixed; top: 0; right: -400px; width: 350px; height: 100vh; background: #000; border-left: 1px solid var(--primary); z-index: 6000; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 25px; box-sizing: border-box; }
+        .side-panel { position: fixed; top: 0; right: -400px; width: 350px; height: 100vh; background: #000; border-left: 1px solid var(--primary); z-index: 6000; transition: 0.3s; padding: 25px; box-sizing: border-box; }
         .side-panel.open { right: 0; }
-        .close-btn { position: absolute; top: 15px; left: 15px; color: #ff4444; cursor: pointer; font-weight: bold; font-size: 20px; border: 1px solid #ff4444; padding: 0 10px; }
+        .close-btn { position: absolute; top: 15px; left: 15px; color: #ff4444; cursor: pointer; font-weight: bold; border: 1px solid #ff4444; padding: 0 8px; }
 
-        /* INPUTS & BUTTONS */
         .input-box { background: #000; border: 1px solid var(--primary); color: var(--primary); padding: 12px; width: 100%; box-sizing: border-box; margin-bottom: 15px; outline: none; font-family: inherit; }
-        .btn-action { cursor: pointer; transition: 0.2s; }
+        .btn-action { cursor: pointer; transition: 0.2s; background: none; color: var(--primary); }
         .btn-action:hover { background: var(--primary); color: #000; }
         
-        /* GAME CARDS */
         .game-card { background: var(--card); border: 1px solid #111; border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; }
-        .game-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0, 255, 65, 0.2); }
-        .game-icon { width: 100%; aspect-ratio: 1; border-radius: 5px; object-fit: cover; margin-bottom: 12px; pointer-events: none; }
+        .game-card:hover { border-color: var(--primary); transform: translateY(-3px); }
+        .game-icon { width: 100%; aspect-ratio: 1; border-radius: 5px; object-fit: cover; margin-bottom: 12px; display: block; background: #111; }
         
-        /* TICKER */
         .ticker-wrap { position: fixed; bottom: 0; width: 100%; overflow: hidden; background: #050505; border-top: 1px solid var(--accent); height: 35px; line-height: 35px; }
         .ticker { display: inline-block; white-space: nowrap; animation: ticker-move 30s linear infinite; }
-        .ticker-item { display: inline-block; padding: 0 50px; font-size: 12px; color: var(--primary); }
-        @keyframes ticker-move { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .ticker-item { display: inline-block; padding: 0 50px; font-size: 11px; }
 
-        /* VISIBILITY TIERS */
         .root-tool, .admin-tool { display: none !important; }
         body.is-root .root-tool, body.is-root .admin-tool { display: block !important; }
         body.is-admin .admin-tool { display: block !important; }
@@ -49,26 +41,21 @@
 </head>
 <body class="is-pleb">
 
-    <div id="lockdownScreen">
-        <img src="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_48dp.png" style="width:40px; margin-bottom:15px;">
-        <h1>404. That’s an error.</h1>
-        <p>The requested URL was not found on this server.</p>
-    </div>
-
     <div id="authLayer">
         <div class="login-card">
-            <h2 style="letter-spacing:4px; color:var(--primary);">MONGLE_SYSTEMS</h2>
-            <input type="password" id="password" class="input-box" placeholder="ACCESS_KEY">
-            <button class="input-box btn-action" onclick="login('pleb')">USER LOGIN</button>
+            <h2 style="letter-spacing:4px;">MONGLE_SYSTEMS</h2>
+            <input type="text" id="username" class="input-box" placeholder="USERNAME">
+            <button class="input-box btn-action" onclick="login('pleb')">INITIALIZE SESSION</button>
             <div style="display: flex; gap: 10px;">
-                <button class="input-box btn-action" style="font-size: 10px;" onclick="login('admin')">ADMIN</button>
-                <button class="input-box btn-action" style="font-size: 10px;" onclick="login('root')">ROOT</button>
+                <button class="input-box btn-action" style="font-size: 10px;" onclick="promptLogin('admin')">ADMIN ACCESS</button>
+                <button class="input-box btn-action" style="font-size: 10px;" onclick="promptLogin('root')">ROOT ACCESS</button>
             </div>
         </div>
     </div>
 
     <div id="arcade">
         <div class="top-bar">
+            <div id="userDisplay">USER: Guest</div>
             <div id="liveClock">00:00:00</div>
             <div style="display:flex; gap:10px;">
                 <input type="text" id="gameSearch" class="input-box" style="width:150px; margin:0;" placeholder="Search..." onkeyup="renderGames()">
@@ -86,21 +73,20 @@
         
         <div class="admin-tool">
             <label style="font-size:10px; opacity:0.7;">PANIC_URL</label>
-            <input type="text" id="prefUrl" class="input-box" placeholder="https://google.com">
+            <input type="text" id="prefUrl" class="input-box">
             <label style="font-size:10px; opacity:0.7;">PANIC_KEY</label>
-            <input type="text" id="prefKey" class="input-box" placeholder="e.g. ` or q">
-            <button class="input-box btn-action" onclick="savePrefs()">UPDATE LOCAL CONFIG</button>
+            <input type="text" id="prefKey" class="input-box">
+            <button class="input-box btn-action" onclick="savePrefs()">SAVE CONFIG</button>
         </div>
 
         <div class="root-tool" style="margin-top:20px; border-top:2px dashed gold; padding-top:20px;">
             <h3 style="color:gold;">ROOT_CONSOLE</h3>
-            <input type="text" id="broadcastInput" class="input-box" placeholder="Enter Global Broadcast...">
+            <input type="text" id="broadcastInput" class="input-box" placeholder="Global Msg...">
             <button class="input-box btn-action" onclick="updateBroadcast()" style="color:cyan; border-color:cyan;">SEND BROADCAST</button>
-            <button class="input-box btn-action" id="vanishBtn" onclick="toggleVanish()">VANISH_GRID: OFF</button>
+            <button class="input-box btn-action" id="vanishBtn" onclick="toggleVanish()">VANISH: OFF</button>
             <button class="input-box btn-action" id="maintBtn" onclick="toggleMaint()">LOCKDOWN: OFF</button>
         </div>
-        
-        <button class="input-box btn-action" style="margin-top:30px; color:red; border-color:red;" onclick="location.reload()">TERMINATE SESSION</button>
+        <button class="input-box btn-action" style="margin-top:30px; color:red; border-color:red;" onclick="location.reload()">LOGOUT</button>
     </div>
 
     <script type="module">
@@ -113,21 +99,22 @@
 
         let allGames = [], isRoot = false, isAdmin = false;
 
-        // FIXED LOGIN LOGIC
-        window.login = (type) => {
-            const val = document.getElementById('password').value;
-            if (type === 'root') {
-                if (val !== "MONGLE_OWNER_99") return alert("ROOT ACCESS DENIED");
-                isRoot = true; document.body.className = "is-root";
-            } else if (type === 'admin') {
-                if (val !== "admin123") return alert("ADMIN ACCESS DENIED");
-                isAdmin = true; document.body.className = "is-admin";
-            }
+        window.promptLogin = (type) => {
+            const pass = prompt(`Enter ${type.toUpperCase()} Access Key:`);
+            if (type === 'root' && pass === "MONGLE_OWNER_99") login('root');
+            else if (type === 'admin' && pass === "admin123") login('admin');
+            else if (pass !== null) alert("INVALID KEY");
+        };
+
+        window.login = (role) => {
+            if (role === 'root') { isRoot = true; document.body.className = "is-root"; }
+            if (role === 'admin') { isAdmin = true; document.body.className = "is-admin"; }
             
+            const user = document.getElementById('username').value || "Guest";
+            document.getElementById('userDisplay').innerText = `USER: ${user.toUpperCase()}`;
             document.getElementById('authLayer').style.display = 'none';
             document.getElementById('arcade').style.display = 'flex';
             
-            // Initial Load
             document.getElementById('prefUrl').value = localStorage.getItem('m_panicUrl') || 'https://google.com';
             document.getElementById('prefKey').value = localStorage.getItem('m_panicKey') || '`';
             
@@ -135,51 +122,34 @@
         };
 
         window.toggleSettings = () => document.getElementById('settingsPanel').classList.toggle('open');
-        
-        window.savePrefs = () => {
-            localStorage.setItem('m_panicUrl', document.getElementById('prefUrl').value);
-            localStorage.setItem('m_panicKey', document.getElementById('prefKey').value);
-            alert("LOCAL CONFIG SAVED");
-        };
+        window.savePrefs = () => { localStorage.setItem('m_panicUrl', document.getElementById('prefUrl').value); localStorage.setItem('m_panicKey', document.getElementById('prefKey').value); alert("SAVED"); };
+        window.doPanic = () => location.replace(localStorage.getItem('m_panicUrl') || 'https://google.com');
 
-        window.doPanic = () => {
-            const url = localStorage.getItem('m_panicUrl') || 'https://google.com';
-            location.replace(url);
-        };
-
-        // ROOT COMMANDS
         window.toggleMaint = () => get(ref(db, 'global/maintenance')).then(s => set(ref(db, 'global/maintenance'), !s.val()));
         window.toggleVanish = () => get(ref(db, 'global/vanish')).then(s => set(ref(db, 'global/vanish'), !s.val()));
         window.updateBroadcast = () => set(ref(db, 'global/broadcast'), document.getElementById('broadcastInput').value);
 
         function syncSystem() {
             onValue(ref(db, 'global/broadcast'), (s) => {
-                const msg = s.val() || "System Nominal";
-                document.getElementById('tickerContent').innerHTML = `
-                    <span class="ticker-item">MONGLE ARCADE v2.8.0</span>
-                    <span class="ticker-item" style="color:cyan; font-weight:bold;">BROADCAST: ${msg}</span>
-                    <span class="ticker-item">SESSION_ACTIVE</span>
-                `;
+                document.getElementById('tickerContent').innerHTML = `<span class="ticker-item">MONGLE v2.8.1</span><span class="ticker-item" style="color:cyan;">BROADCAST: ${s.val() || 'System Nominal'}</span>`;
             });
-
             onValue(ref(db, 'global/maintenance'), (s) => {
-                const locked = s.val() === true;
-                if (locked && !isRoot) location.reload();
-                if (isRoot) document.getElementById('maintBtn').innerText = locked ? "LOCKDOWN: ON" : "LOCKDOWN: OFF";
+                if (s.val() && !isRoot) location.reload();
+                if (isRoot) document.getElementById('maintBtn').innerText = s.val() ? "LOCKDOWN: ON" : "LOCKDOWN: OFF";
             });
-
             onValue(ref(db, 'global/vanish'), (s) => {
-                const active = s.val() === true;
-                if (!isRoot) document.getElementById('gameGrid').style.opacity = active ? "0" : "1";
-                if (isRoot) document.getElementById('vanishBtn').innerText = active ? "VANISH: ON" : "VANISH_GRID: OFF";
+                if (!isRoot) document.getElementById('gameGrid').style.opacity = s.val() ? "0" : "1";
+                if (isRoot) document.getElementById('vanishBtn').innerText = s.val() ? "VANISH: ON" : "VANISH: OFF";
             });
         }
 
         async function fetchGames() {
-            const res = await fetch(`https://api.github.com/repos/bob154526-hue/Mongle/contents/`);
-            const items = await res.json();
-            allGames = items.filter(i => i.name.endsWith('.html') && i.name !== 'index.html');
-            renderGames();
+            try {
+                const res = await fetch(`https://api.github.com/repos/bob154526-hue/Mongle/contents/`);
+                const items = await res.json();
+                allGames = items.filter(i => i.name.endsWith('.html') && i.name !== 'index.html');
+                renderGames();
+            } catch (e) { console.error("Fetch failed"); }
         }
 
         window.renderGames = () => {
@@ -188,29 +158,21 @@
             allGames.forEach(game => {
                 const name = game.name.replace('.html', '').replace(/_/g, ' ');
                 if (query && !name.toLowerCase().includes(query)) return;
-                const card = document.createElement('div');
-                card.className = 'game-card';
-                card.innerHTML = `
-                    <img class="game-icon" src="https://raw.githubusercontent.com/bob154526-hue/Mongle/main/icons/${game.name.replace('.html', '.png')}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/686/686588.png'">
-                    <span class="game-title">${name}</span>
-                `;
-                card.onclick = () => window.open(`https://raw.githack.com/bob154526-hue/Mongle/main/${game.name}`, '_blank');
-                grid.appendChild(card);
+                
+                // ICON PATH FIX: Ensure we are pointing to the main branch icons folder
+                const iconName = game.name.replace('.html', '.png');
+                const iconUrl = `https://raw.githubusercontent.com/bob154526-hue/Mongle/main/icons/${iconName}`;
+                
+                grid.innerHTML += `
+                    <div class="game-card" onclick="window.open('https://raw.githack.com/bob154526-hue/Mongle/main/${game.name}','_blank')">
+                        <img class="game-icon" src="${iconUrl}" onload="this.style.opacity=1" onerror="this.src='https://cdn-icons-png.flaticon.com/512/686/686588.png'">
+                        <span class="game-title">${name}</span>
+                    </div>`;
             });
         };
 
-        // HOTKEYS
-        document.addEventListener('keydown', (e) => {
-            if (e.key === localStorage.getItem('m_panicKey')) doPanic();
-            // SHIFT+L to bypass "404" screen if lockdown is active
-            if (e.shiftKey && e.key === 'L') {
-                document.getElementById('lockdownScreen').style.display = 'none';
-            }
-        });
-
-        setInterval(() => {
-            document.getElementById('liveClock').innerText = new Date().toLocaleTimeString();
-        }, 1000);
+        document.addEventListener('keydown', (e) => { if (e.key === localStorage.getItem('m_panicKey')) doPanic(); });
+        setInterval(() => { document.getElementById('liveClock').innerText = new Date().toLocaleTimeString(); }, 1000);
     </script>
 </body>
 </html>
