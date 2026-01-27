@@ -10,36 +10,34 @@
 
         /* OVERLAYS */
         #seizedOverlay { display: none; position: fixed; inset: 0; background: #000; z-index: 10002; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; }
-        .ghost-active { cursor: none !important; }
-        #fakeCursor { display: none; position: fixed; width: 20px; height: 20px; pointer-events: none; z-index: 30000; }
-
-        /* UI COMPONENTS */
         #lockdownScreen { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: black; }
         #bypassModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; border: 3px solid #000; padding: 30px; z-index: 10000; color: black; }
-        #mainApp { display: none; height: 100vh; flex-direction: column; }
         
+        #mainApp { display: none; height: 100vh; flex-direction: column; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: rgba(0,0,0,0.95); border-bottom: 1px solid var(--primary); }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; padding: 20px; overflow-y: auto; }
-        .game-card { background: var(--card); border: 1px solid var(--accent); padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; }
+        .game-card { background: var(--card); border: 1px solid var(--accent); padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .game-card:hover { border-color: var(--primary); background: var(--accent); }
 
-        /* PANEL STYLES */
+        /* PANELS */
         .side-panel { position: fixed; top: 0; right: -400px; width: 380px; height: 100vh; background: rgba(0, 5, 0, 0.98); border-left: 2px solid var(--primary); z-index: 2000; transition: 0.4s; padding: 25px; box-sizing: border-box; }
         .side-panel.open { right: 0; }
-        
         #plebSettings { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; background: #111; border: 1px solid var(--primary); padding: 20px; z-index: 3000; }
         .input-box { background: #000; border: 1px solid var(--primary); color: var(--primary); padding: 10px; width: 100%; box-sizing: border-box; margin-bottom: 10px; font-family: inherit; }
     </style>
 </head>
 <body id="bodyRoot">
 
-    <img id="fakeCursor" src="https://cur.cursors-4u.net/arrows/arr-2/arr112.png">
-    <div id="seizedOverlay"><h1>DOMAIN SEIZED</h1></div>
+    <div id="seizedOverlay">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Seal_of_the_Federal_Bureau_of_Investigation.svg/1200px-Seal_of_the_Federal_Bureau_of_Investigation.svg.png" width="120">
+        <h1 style="color:red;">DOMAIN SEIZED</h1>
+    </div>
     <div id="lockdownScreen"><h1>404 Not Found</h1></div>
 
     <div id="bypassModal">
-        <h2>SYSTEM_KEY</h2>
-        <input type="password" id="sysKey" class="input-box" style="background:#eee; color:#000;">
-        <button onclick="checkBypass()" class="input-box">UNLOCK</button>
+        <h2>ENTER_SYSTEM_KEY</h2>
+        <input type="password" id="sysKey" class="input-box" style="background: #eee; color: #000;">
+        <button onclick="checkBypass()" class="input-box" style="background:#000; color:#fff;">UNBOLT</button>
     </div>
 
     <div id="mainApp">
@@ -66,24 +64,32 @@
 
         <div id="plebSettings">
             <h3 style="margin-top:0;">USER_SETTINGS</h3>
-            <input type="text" id="panicUrlInput" class="input-box" placeholder="Panic URL">
-            <input type="text" id="hotkeyInput" class="input-box" readonly placeholder="Click & Press Key" onclick="captureKey()">
+            <label style="font-size:10px;">PANIC URL:</label>
+            <input type="text" id="panicUrlInput" class="input-box">
+            <label style="font-size:10px;">PANIC HOTKEY:</label>
+            <input type="text" id="hotkeyInput" class="input-box" readonly placeholder="Click here then press a key" onclick="captureKey()">
             <button class="input-box" style="background:var(--primary); color:black;" onclick="savePlebSettings()">SAVE</button>
+            <button class="input-box" onclick="document.getElementById('plebSettings').style.display='none'">CANCEL</button>
         </div>
 
         <div id="settingsPanel" class="side-panel">
             <h2 style="color:red;">MONGLE_ROOT</h2>
             <input type="text" id="ttsInput" class="input-box" placeholder="TTS Message...">
             <button class="input-box" onclick="deployTTS()">SPEAK TO ALL</button>
-            <button class="input-box" onclick="triggerChaos('seized')">FBI_SEIZURE</button>
+            <hr border="1" color="#222">
+            <button class="input-box" onclick="triggerChaos('seized')">👮 FBI_SEIZURE</button>
             <button class="input-box" style="color:red;" onclick="triggerChaos('reset')">TERMINATE_ALL</button>
+            <hr border="1" color="#222">
+            <h3 style="font-size:12px;">GLOBAL AWARDS</h3>
+            <input type="text" id="ownerPickInput" class="input-box" placeholder="Set Top Game...">
+            <button class="input-box" onclick="setOwnerPick()">UPDATE STATS PAGE</button>
             <button class="input-box" onclick="toggleRootSettings()">CLOSE</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue, push, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDgRvxKypPsOx379SNleE6Uij7mKkEJxGY", databaseURL: "https://monglearcade-default-rtdb.firebaseio.com", projectId: "monglearcade" };
         const app = initializeApp(firebaseConfig);
@@ -92,6 +98,7 @@
         let isRoot = false, currentPanicKey = localStorage.getItem('p_key') || 'Escape';
         let panicUrl = localStorage.getItem('p_url') || 'https://classroom.google.com';
 
+        // --- LOCKDOWN SYSTEM ---
         window.checkBypass = () => {
             if(document.getElementById('sysKey').value === "mongle77") {
                 document.getElementById('lockdownScreen').style.display = 'none';
@@ -100,6 +107,7 @@
             }
         };
 
+        // --- AUTH & STATS ---
         window.handleLogin = (role) => {
             if (role === 'root') { 
                 isRoot = true; 
@@ -110,11 +118,45 @@
             }
             document.getElementById('authLayer').style.display = 'none';
             document.getElementById('arcade').style.display = 'flex';
+            
+            // Start Presence Tracking
+            const presenceRef = push(ref(db, 'stats/presence'));
+            set(presenceRef, true);
+            onDisconnect(presenceRef).remove();
+
             loadGames(); syncChaos();
         };
 
         window.promptLogin = () => { if (prompt("Key:") === "MONGLE_OWNER_99") handleLogin('root'); };
 
+        // --- GAME SYSTEM ---
+        async function loadGames() {
+            const res = await fetch(`https://api.github.com/repos/bob154526-hue/Mongle/contents/`);
+            const files = (await res.json()).filter(i => i.name.endsWith('.html') && i.name !== 'index.html');
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = "";
+            files.forEach(f => {
+                const card = document.createElement('div');
+                card.className = 'game-card';
+                card.innerHTML = f.name.replace('.html','');
+                card.onclick = () => {
+                    window.trackClick(f.name);
+                    window.open(`https://raw.githack.com/bob154526-hue/Mongle/main/${f.name}`, '_blank');
+                };
+                grid.appendChild(card);
+            });
+        }
+
+        window.trackClick = (gameName) => {
+            const cleanName = gameName.replace('.html','').replace(/\./g, '_');
+            const clickRef = ref(db, `stats/clicks/${cleanName}`);
+            onValue(clickRef, (snap) => {
+                let current = snap.val() || 0;
+                set(clickRef, current + 1);
+            }, { onlyOnce: true });
+        };
+
+        // --- PLEB SETTINGS ---
         window.openPlebSettings = () => {
             document.getElementById('panicUrlInput').value = panicUrl;
             document.getElementById('hotkeyInput').value = currentPanicKey;
@@ -125,7 +167,7 @@
             const input = document.getElementById('hotkeyInput');
             input.value = "LISTENING...";
             const listener = (e) => { e.preventDefault(); currentPanicKey = e.key; input.value = e.key; window.removeEventListener('keydown', listener); };
-            window.addEventListener('keydown', listener);
+            window.addEventListener('keydown', listener, { once: true });
         };
 
         window.savePlebSettings = () => {
@@ -137,32 +179,31 @@
 
         window.triggerPanic = () => { window.location.replace(panicUrl); };
 
-        async function loadGames() {
-            const res = await fetch(`https://api.github.com/repos/bob154526-hue/Mongle/contents/`);
-            const files = (await res.json()).filter(i => i.name.endsWith('.html') && i.name !== 'index.html');
-            const grid = document.getElementById('gameGrid');
-            grid.innerHTML = "";
-            files.forEach(f => {
-                const card = document.createElement('div');
-                card.className = 'game-card';
-                card.innerHTML = f.name.replace('.html','');
-                card.onclick = () => window.open(`https://raw.githack.com/bob154526-hue/Mongle/main/${f.name}`, '_blank');
-                grid.appendChild(card);
-            });
-        }
-
+        // --- ROOT ACTIONS ---
         window.toggleRootSettings = () => document.getElementById('settingsPanel').classList.toggle('open');
         window.deployTTS = () => set(ref(db, 'global/tts'), { text: document.getElementById('ttsInput').value, time: Date.now() });
         window.triggerChaos = (t) => set(ref(db, 'global/chaos'), { type: t, time: Date.now() });
+        window.setOwnerPick = () => {
+            set(ref(db, 'global/ownerPick'), document.getElementById('ownerPickInput').value);
+            alert("Global Stats Updated!");
+        };
 
         function syncChaos() {
             onValue(ref(db, 'global/chaos'), (s) => {
                 const d = s.val();
                 if (!d || isRoot) return;
                 document.getElementById('seizedOverlay').style.display = (d.type === 'seized') ? 'flex' : 'none';
+                if (d.type === 'reset') window.location.reload();
+            });
+            onValue(ref(db, 'global/tts'), (s) => {
+                const d = s.val();
+                if (!d || isRoot) return;
+                const msg = new SpeechSynthesisUtterance(d.text);
+                window.speechSynthesis.speak(msg);
             });
         }
 
+        // HOTKEYS
         document.addEventListener('keydown', (e) => {
             if (e.shiftKey && e.key === 'L') document.getElementById('bypassModal').style.display = 'block';
             if (e.key === currentPanicKey) triggerPanic();
