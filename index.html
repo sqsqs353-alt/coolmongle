@@ -3,239 +3,137 @@
 <head>
     <title>Google Docs</title>
     <style>
-        /* THEME COLOR: MIDNIGHT BLUE */
         :root { 
-            --bg: #020617;        /* Very dark blue */
-            --card: #0f172a;      /* Slate blue */
-            --accent: #3b82f6;    /* Bright blue */
+            --bg: #023614; 
+            --card: #0f172a; 
+            --accent: #3b82f6; 
             --text: #f8fafc; 
         }
-
         body { 
-            background-color: var(--bg); 
+            background-color: var(--bg) !important; 
             color: var(--text); 
             font-family: 'Segoe UI', sans-serif; 
             margin: 0; 
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+            overflow-x: hidden;
         }
-
-        /* This ensures the color shows even if the image is missing */
         .bg-overlay { 
-            position: fixed; 
-            top: 0; left: 0; width: 100%; height: 100%; 
-            background: linear-gradient(180deg, rgba(2, 6, 23, 0.8) 0%, rgba(2, 6, 23, 1) 100%); 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: radial-gradient(circle at top, #1e293b 0%, #020617 100%); 
             z-index: -1; 
         }
-
-        .navbar { 
-            background: rgba(15, 23, 42, 0.9); 
-            backdrop-filter: blur(10px); 
-            padding: 15px 30px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: 1px solid #1e293b; 
-            position: sticky; top: 0; z-index: 1000; 
-        }
-
+        .navbar { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; position: sticky; top: 0; z-index: 1000; }
         .container { padding: 30px 20px; max-width: 1400px; margin: 0 auto; }
-        
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
-            gap: 25px; 
-            margin-bottom: 40px; 
-        }
-
-        .game-card { 
-            background: var(--card); 
-            border-radius: 20px; 
-            border: 1px solid #1e293b; 
-            padding: 20px 10px; 
-            text-align: center; 
-            cursor: pointer; 
-            transition: 0.3s; 
-            position: relative; 
-        }
-
-        .game-card:hover { 
-            transform: translateY(-5px); 
-            border-color: var(--accent); 
-            box-shadow: 0 0 25px rgba(59, 130, 246, 0.2);
-        }
-
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 25px; margin-bottom: 40px; }
+        .game-card { background: var(--card); border-radius: 20px; border: 1px solid #1e293b; padding: 20px 10px; text-align: center; cursor: pointer; transition: 0.3s; position: relative; }
+        .game-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 0 25px rgba(59, 130, 246, 0.2); }
         .logo-box { width: 70px; height: 70px; margin: 0 auto 10px; font-size: 45px; display: flex; align-items: center; justify-content: center; }
         .section-header { border-left: 5px solid var(--accent); padding-left: 15px; margin: 30px 0 15px; font-size: 22px; color: #fff; }
-        
-        .btn-ui { 
-            background: #1e293b; 
-            border: 1px solid #334155; 
-            color: white; 
-            padding: 10px 18px; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            font-weight: bold; 
-        }
-
-        #search { 
-            padding: 10px 15px; 
-            border-radius: 10px; 
-            border: 1px solid #334155; 
-            background: #020617; 
-            color: white; 
-            width: 220px; 
-        }
-
+        .btn-ui { background: #1e293b; border: 1px solid #334155; color: white; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        #search { padding: 10px 15px; border-radius: 10px; border: 1px solid #334155; background: #000; color: white; width: 220px; }
         .footer-nav { position: fixed; bottom: 15px; right: 25px; display: flex; gap: 10px; }
-        .footer-nav a, .footer-nav button { 
-            background: #1e293b; 
-            color: #fff; 
-            padding: 8px 15px; 
-            border-radius: 8px; 
-            text-decoration: none; 
-            font-size: 13px; 
-            font-weight: bold; 
-            border: 1px solid var(--accent); 
-        }
-
-        #authModal { 
-            position:fixed; top:0; left:0; width:100%; height:100%; 
-            background:var(--bg); z-index:10000; 
-            display:flex; justify-content:center; align-items:center; flex-direction:column;
-        }
+        #authModal { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:10000; display:flex; justify-content:center; align-items:center; flex-direction:column; }
+        .error-msg { color: #ef4444; font-size: 12px; margin-top: 5px; display: none; }
     </style>
 </head>
 <body>
     <div id="authModal" style="display:none;">
-        <h1 style="color:var(--accent); font-size: 3rem; margin-bottom: 10px;">MONGLE</h1>
-        <p style="margin-bottom: 20px;">Enter a username to begin</p>
-        <input type="text" id="usernameInput" placeholder="Username..." style="padding:15px; border-radius:10px; width:280px; border:1px solid var(--accent); background:#000; color:#fff; margin-bottom:15px;">
-        <button class="btn-ui" style="background:var(--accent); width: 280px;" onclick="createAccount()">Start Gaming</button>
+        <h1 style="color:var(--accent); font-size: 3rem; margin: 0;">MONGLE</h1>
+        <p>Create your player profile</p>
+        <input type="text" id="usernameInput" placeholder="Username..." style="padding:15px; border-radius:10px; width:280px; border:1px solid #334155; background:#000; color:#fff;">
+        <div id="nameError" class="error-msg">That name is reserved!</div>
+        <button class="btn-ui" style="background:var(--accent); width: 280px; margin-top:15px;" onclick="createAccount()">Join Arcade</button>
     </div>
 
     <div class="bg-overlay"></div>
-    
     <div class="navbar">
-        <div id="clock" style="color: var(--accent); font-weight: bold; font-family: monospace; font-size: 1.2rem;">00:00:00</div>
+        <div id="clock" style="color: var(--accent); font-weight: bold; font-family: monospace;">00:00:00</div>
         <div id="userDisplay" style="font-weight:bold; color: var(--accent);"></div>
-        <div style="display:flex; gap:10px;">
-            <input type="text" id="search" placeholder="Search..." onkeyup="filter()">
-            <button class="btn-ui" onclick="panic()" style="background:#ef4444; border:none;">Panic</button>
-        </div>
+        <input type="text" id="search" placeholder="Search..." onkeyup="filter()">
     </div>
 
     <div class="container">
-        <div id="lastPlayedSection" style="display:none;">
-            <h2 class="section-header">🕒 Recently Played</h2>
-            <div id="lastPlayedGrid" class="grid"></div>
-        </div>
-        <div id="favSection" style="display:none;"><h2 class="section-header">⭐ Your Favorites</h2><div id="favGrid" class="grid"></div></div>
+        <div id="favSection" style="display:none;"><h2 class="section-header">⭐ Favorites</h2><div id="favGrid" class="grid"></div></div>
         <div id="fnafSection" style="display:none;"><h2 class="section-header">🐻 FNAF Collection</h2><div id="fnafGrid" class="grid"></div></div>
-        <h2 class="section-header">🕹️ All Games</h2>
+        <h2 class="section-header">🕹️ Library</h2>
         <div id="gameGrid" class="grid"></div>
     </div>
 
     <div class="footer-nav">
-        <button onclick="logout()" style="cursor:pointer;">🚪 Logout</button>
-        <a href="wiki.html?mode=user">⚙️ Settings</a>
-        <a href="wiki.html?mode=admin" id="adminBtn" style="display:none; background:#ef4444; border:none;">🔑 Super Admin</a>
+        <button class="btn-ui" onclick="logout()">Logout</button>
+        <a href="wiki.html?mode=admin" id="adminBtn" style="display:none; color:white; background:#ef4444; padding:10px; border-radius:10px; text-decoration:none;">Admin</a>
     </div>
 
     <script>
         const USER = "bob154526-hue"; const REPO = "Mongle";
         
-        // Account Logic
-        if(!localStorage.getItem('mUser')) { 
-            document.getElementById('authModal').style.display = 'flex'; 
-        } else { 
-            document.getElementById('userDisplay').innerText = "👤 " + localStorage.getItem('mUser').toUpperCase(); 
-        }
-
+        // Block Names
         function createAccount() {
-            const val = document.getElementById('usernameInput').value;
-            if(val.length > 1) { localStorage.setItem('mUser', val); location.reload(); }
+            const val = document.getElementById('usernameInput').value.trim().toLowerCase();
+            const err = document.getElementById('nameError');
+            if(["mongle", "admin", "owner", "system"].includes(val)) {
+                err.style.display = "block";
+            } else if(val.length > 1) {
+                localStorage.setItem('mUser', val); location.reload();
+            }
         }
-        function logout() { localStorage.removeItem('mUser'); location.reload(); }
 
-        // Clock
-        function updateClock() { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }
-        setInterval(updateClock, 1000); updateClock();
+        if(!localStorage.getItem('mUser')) document.getElementById('authModal').style.display = 'flex';
+        else document.getElementById('userDisplay').innerText = "👤 " + localStorage.getItem('mUser').toUpperCase();
+
+        function logout() { localStorage.removeItem('mUser'); location.reload(); }
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 
         function filter() {
             let q = document.getElementById('search').value.toLowerCase();
             document.getElementById('adminBtn').style.display = (q === "admin") ? "block" : "none";
-            document.querySelectorAll('.game-card').forEach(c => {
-                c.style.display = c.innerText.toLowerCase().includes(q) ? "" : "none";
-            });
-        }
-
-        async function launch(url, name) {
-            localStorage.setItem('lastPlayed', name);
-            const res = await fetch(url); const code = await res.text();
-            const blobUrl = URL.createObjectURL(new Blob([code], { type: 'text/html' }));
-            window.location.href = blobUrl;
-        }
-
-        function toggleFav(e, fileName) {
-            e.stopPropagation();
-            let favs = JSON.parse(localStorage.getItem('userFavs')) || [];
-            favs = favs.includes(fileName) ? favs.filter(f => f !== fileName) : [...favs, fileName];
-            localStorage.setItem('userFavs', JSON.stringify(favs));
-            autoScan();
+            document.querySelectorAll('.game-card').forEach(c => { c.style.display = c.innerText.toLowerCase().includes(q) ? "" : "none"; });
         }
 
         async function autoScan() {
-            const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/`);
-            const files = await res.json();
+            // CACHE LOGIC: Try to load from memory first to prevent "disappearing games"
+            const cached = localStorage.getItem('gameCache');
+            const cacheTime = localStorage.getItem('gameCacheTime');
+            let files;
+
+            if (cached && (Date.now() - cacheTime < 1800000)) { // 30 min cache
+                files = JSON.parse(cached);
+            } else {
+                try {
+                    const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/`);
+                    files = await res.json();
+                    if(Array.isArray(files)) {
+                        localStorage.setItem('gameCache', JSON.stringify(files));
+                        localStorage.setItem('gameCacheTime', Date.now());
+                    }
+                } catch(e) { console.error("API Limit reached"); return; }
+            }
+
             const gGrid = document.getElementById('gameGrid');
             const fGrid = document.getElementById('fnafGrid');
             const favGrid = document.getElementById('favGrid');
-            const lastGrid = document.getElementById('lastPlayedGrid');
-            
-            gGrid.innerHTML = ""; fGrid.innerHTML = ""; favGrid.innerHTML = ""; lastGrid.innerHTML = "";
-            
             const favs = JSON.parse(localStorage.getItem('userFavs')) || [];
             const forcedEmoji = localStorage.getItem('globalEmoji');
-            const lastPlayed = localStorage.getItem('lastPlayed');
 
             files.filter(f => f.name.endsWith('.html') && !['index.html', 'wiki.html'].includes(f.name)).forEach(file => {
                 const name = file.name.replace('.html', '');
                 const card = document.createElement('div'); card.className = 'game-card';
-                card.onclick = () => launch(file.download_url, name);
+                card.onclick = () => window.location.href = file.download_url;
                 
                 const emoji = forcedEmoji || '🎮';
-                const isFav = favs.includes(file.name);
+                card.innerHTML = `<div class="logo-box">${emoji}</div><div class="game-name">${name}</div>`;
                 
-                card.innerHTML = `
-                    <div class="fav-star ${isFav?'active':''}" onclick="toggleFav(event,'${file.name}')" style="position:absolute; top:10px; right:10px; filter:${isFav?'grayscale(0)':'grayscale(1)'}">⭐</div>
-                    <div class="logo-box">${emoji}</div>
-                    <div class="game-name">${name}</div>
-                `;
-                
-                if(isFav) { 
-                    document.getElementById('favSection').style.display='block'; 
-                    let clone = card.cloneNode(true);
-                    clone.onclick = card.onclick;
-                    clone.querySelector('.fav-star').onclick = (e) => toggleFav(e, file.name);
-                    favGrid.appendChild(clone);
+                if(favs.includes(file.name)) {
+                    document.getElementById('favSection').style.display = 'block';
+                    favGrid.appendChild(card.cloneNode(true)); favGrid.lastChild.onclick = card.onclick;
                 }
-                if(name === lastPlayed) { 
-                    document.getElementById('lastPlayedSection').style.display='block'; 
-                    let clone = card.cloneNode(true);
-                    clone.onclick = card.onclick;
-                    clone.querySelector('.fav-star').onclick = (e) => toggleFav(e, file.name);
-                    lastGrid.appendChild(clone); 
+                if(name.toLowerCase().match(/fnaf|five nights|freddy/)) {
+                    document.getElementById('fnafSection').style.display = 'block';
+                    fGrid.appendChild(card);
+                } else {
+                    gGrid.appendChild(card);
                 }
-                if(name.toLowerCase().match(/fnaf|five nights|freddy/)) { 
-                    document.getElementById('fnafSection').style.display='block'; 
-                    fGrid.appendChild(card); 
-                }
-                else { gGrid.appendChild(card); }
             });
         }
-        function panic() { window.location.replace(localStorage.getItem('panicKey_user') || 'https://classroom.google.com'); }
         autoScan();
     </script>
 </body>
