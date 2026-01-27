@@ -1,39 +1,94 @@
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, push, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>System Statistics | Mongle OS</title>
+    <style>
+        :root { --primary: #00ff41; --bg: #000; --card: #0a0a0a; --accent: #003b00; --gold: #ffcc00; }
+        body { background: var(--bg); color: var(--primary); font-family: 'Courier New', monospace; padding: 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+        .stat-card { background: var(--card); border: 1px solid var(--accent); padding: 20px; border-radius: 10px; text-align: center; }
+        .val { font-size: 32px; font-weight: bold; color: white; display: block; margin: 10px 0; }
+        .label { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--primary); }
+        .highlight { color: var(--gold); border: 1px solid var(--gold); }
+        h1 { border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+    </style>
+</head>
+<body>
 
-    const firebaseConfig = { 
-        apiKey: "AIzaSyDgRvxKypPsOx379SNleE6Uij7mKkEJxGY", 
-        databaseURL: "https://monglearcade-default-rtdb.firebaseio.com", 
-        projectId: "monglearcade" 
-    };
-    
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    <h1>SYSTEM_STATS_v3.3</h1>
 
-    // --- LIVE USER TRACKING ---
-    // When a user opens the page, add them to the "presence" list
-    const myPresenceRef = push(ref(db, 'stats/presence'));
-    set(myPresenceRef, true);
-    // When they close the tab, remove them automatically
-    onDisconnect(myPresenceRef).remove();
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="label">Users Online Now</span>
+            <span class="val" id="onlineCount">0</span>
+        </div>
 
-    // --- GAME CLICK TRACKING ---
-    // This function runs every time someone clicks a game card
-    window.trackClick = (gameName) => {
-        const cleanName = gameName.replace('.html', '').replace(/\./g, '_');
-        const clickRef = ref(db, `stats/clicks/${cleanName}`);
-        
-        onValue(clickRef, (snap) => {
-            let currentClicks = snap.val() || 0;
-            set(clickRef, currentClicks + 1);
-        }, { onlyOnce: true });
-    };
+        <div class="stat-card">
+            <span class="label">Total Game Launches</span>
+            <span class="val" id="totalClicks">0</span>
+        </div>
 
-    // --- ROOT CONSOLE POWERS ---
-    window.setOwnerPick = () => {
-        const pick = document.getElementById('ownerPickInput').value;
-        set(ref(db, 'global/ownerPick'), pick);
-        alert("Top Pick Updated to: " + pick);
-    };
-</script>
+        <div class="stat-card highlight">
+            <span class="label">⭐ Most Popular Game</span>
+            <span class="val" id="topGame">---</span>
+        </div>
+
+        <div class="stat-card" style="border-color: red;">
+            <span class="label" style="color:red;">Owner's Top Pick</span>
+            <span class="val" id="ownerPick">NONE SET</span>
+        </div>
+    </div>
+
+    <h2 style="margin-top:40px;">Top Played Ranking</h2>
+    <div id="rankingList"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue, push, onDisconnect, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDgRvxKypPsOx379SNleE6Uij7mKkEJxGY", databaseURL: "https://monglearcade-default-rtdb.firebaseio.com", projectId: "monglearcade" };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // 1. TRACK PRESENCE
+        const myPresenceRef = push(ref(db, 'stats/presence'));
+        set(myPresenceRef, true);
+        onDisconnect(myPresenceRef).remove();
+
+        onValue(ref(db, 'stats/presence'), (snap) => {
+            document.getElementById('onlineCount').innerText = snap.size || 1;
+        });
+
+        // 2. TRACK CLICKS & RANKING
+        onValue(ref(db, 'stats/clicks'), (snap) => {
+            const data = snap.val() || {};
+            let total = 0;
+            let bestCount = -1;
+            let bestName = "None";
+            const sorted = [];
+
+            for (let game in data) {
+                total += data[game];
+                sorted.push({name: game, count: data[game]});
+                if (data[game] > bestCount) {
+                    bestCount = data[game];
+                    bestName = game;
+                }
+            }
+
+            document.getElementById('totalClicks').innerText = total;
+            document.getElementById('topGame').innerText = bestName.toUpperCase();
+            
+            // Render List
+            sorted.sort((a,b) => b.count - a.count);
+            document.getElementById('rankingList').innerHTML = sorted.map(g => `<p>${g.name}: ${g.count} plays</p>`).join('');
+        });
+
+        // 3. GET OWNER PICK
+        onValue(ref(db, 'global/ownerPick'), (snap) => {
+            document.getElementById('ownerPick').innerText = (snap.val() || "NONE").toUpperCase();
+        });
+    </script>
+</body>
+</html>
