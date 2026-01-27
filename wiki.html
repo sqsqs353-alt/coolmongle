@@ -3,70 +3,54 @@
 <head>
     <title>Settings</title>
     <style>
-        body { background: #2e0a0a; color: #fff; font-family: sans-serif; padding: 20px; }
-        .box { background: #1d1111; padding: 20px; border-radius: 12px; border: 1px solid #371f1f; margin-bottom: 20px; max-width: 500px; margin-inline: auto; }
-        .btn { width: 100%; padding: 12px; background: #ff4040; border: none; color: #fff; font-weight: bold; cursor: pointer; border-radius: 8px; margin-top: 10px; }
-        input { width: 90%; padding: 10px; margin: 10px 0; background: #000; color: #fff; border: 1px solid #444; }
-        .admin-only { display: none; border: 2px solid gold; }
+        body { background: #1a052e; color: #fff; font-family: sans-serif; padding: 20px; }
+        .box { background: #260a3e; padding: 20px; border-radius: 12px; border: 1px solid #581c87; margin-bottom: 20px; max-width: 500px; margin-inline: auto; }
+        .btn { width: 100%; padding: 12px; background: #a855f7; border: none; color: #fff; font-weight: bold; cursor: pointer; border-radius: 8px; margin-top: 10px; }
+        input { width: 90%; padding: 10px; margin: 10px 0; background: #000; color: #fff; border: 1px solid #581c87; }
+        .admin-only { display: none; border: 2px solid gold; padding: 20px; border-radius: 15px; }
     </style>
 </head>
 <body>
-    <div id="userSection">
-        <div class="box">
-            <h3>🎮 Your Settings</h3>
-            <p>Your Panic Key: <b id="uKey">Escape</b></p>
-            <button class="btn" onclick="recordKey()">Record My Panic Key</button>
-            <hr>
-            <h3>📊 Your Stats</h3>
-            <p>Games Played: <span id="localPlays">0</span></p>
-        </div>
+    <div class="box">
+        <h3>👤 Player Info</h3>
+        <p>Your ID: <b id="pID">Loading...</b></p>
+        <p>Panic Key: <b id="uKey">Escape</b></p>
+        <button class="btn" onclick="recordKey()">Set Panic Key</button>
     </div>
 
     <div id="adminSection" class="admin-only">
-        <h2 style="text-align:center; color:gold;">👑 SUPER ADMIN</h2>
+        <h2 style="text-align:center; color:gold;">👑 MASTER CONTROL</h2>
         <div class="box">
-            <h3>🐢 Global Pranks (April Fools)</h3>
-            <input type="text" id="gBG" placeholder="Global Background URL">
-            <input type="text" id="gEmoji" placeholder="Global Emoji (e.g. 🐢)">
-            <button class="btn" onclick="applyGlobal()">Apply to ALL Users</button>
-            <button class="btn" style="background:#444" onclick="localStorage.removeItem('globalBG'); localStorage.removeItem('globalEmoji'); alert('Reset!');">Reset Prank</button>
+            <h3>🏆 Leaderboard</h3>
+            <div id="stats">Open Admin Console to see stats...</div>
         </div>
         <div class="box">
-            <h3>🚫 Ban Management</h3>
-            <input type="text" id="banUser" placeholder="Enter IP or Device ID (Simulated)">
-            <button class="btn" style="background:black" onclick="localStorage.setItem('banned', 'true'); alert('User Banned!')">Ban Cheater</button>
-            <button class="btn" style="background:green" onclick="localStorage.removeItem('banned'); alert('Unbanned!')">Unban All</button>
-        </div>
-        <div class="box">
-            <h3>📊 Master Analytics</h3>
-            <img src="https://count.getloli.com/get/@bob-mongle-mongle?theme=moebooru">
+            <h3>🐢 Global Prank</h3>
+            <input type="text" id="gEmoji" placeholder="Global Emoji">
+            <button class="btn" onclick="localStorage.setItem('globalEmoji', document.getElementById('gEmoji').value); alert('Done!');">Force Emoji</button>
         </div>
     </div>
 
-    <p style="text-align:center;"><a href="index.html" style="color:red">← Back</a></p>
+    <p style="text-align:center;"><a href="index.html" style="color:#a855f7">← Back to Games</a></p>
 
     <script>
         const params = new URLSearchParams(window.location.search);
         if(params.get('mode') === 'admin') {
-            let p = prompt("Enter Super Admin Password:");
-            if(p === "1234") document.getElementById('adminSection').style.display = 'block';
+            if(prompt("Password?") === "1234") document.getElementById('adminSection').style.display = 'block';
         }
 
+        if(!localStorage.getItem('userCode')) localStorage.setItem('userCode', 'MNGL-' + Math.floor(1000 + Math.random() * 9000));
+        document.getElementById('pID').innerText = localStorage.getItem('userCode');
         document.getElementById('uKey').innerText = localStorage.getItem('panicKey_user') || 'Escape';
-        
+
         function recordKey() {
+            alert("Press your new panic key now...");
             window.onkeydown = (e) => {
                 localStorage.setItem('panicKey_user', e.key);
                 document.getElementById('uKey').innerText = e.key;
                 window.onkeydown = null;
-                alert("Your personal panic key is set!");
+                alert("Key Saved!");
             };
-        }
-
-        function applyGlobal() {
-            localStorage.setItem('globalBG', document.getElementById('gBG').value);
-            localStorage.setItem('globalEmoji', document.getElementById('gEmoji').value);
-            alert("Global prank active!");
         }
     </script>
 </body>
