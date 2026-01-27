@@ -2,27 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Google Drive</title>
+    <title>Google Drie</title>
     <link id="favicon" rel="icon" href="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png">
     <style>
-        /* PURPLE THEME COLORS */
         :root { --primary: #bc13fe; --bg: #05000a; --card: rgba(15, 0, 30, 0.95); --accent: #2a004d; --panic: #ef4444; }
-        
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #f3e8ff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        
+        /* Particle Background */
         #particleCanvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+        /* Auth Layer */
         #authLayer { position: fixed; inset: 0; background: #000; z-index: 5000; display: flex; align-items: center; justify-content: center; }
         .login-box { width: 340px; padding: 40px; background: #000; border: 1px solid var(--accent); border-radius: 15px; text-align: center; box-shadow: 0 0 40px rgba(188, 19, 254, 0.1); }
+        
+        /* Main UI */
         .top-bar { position: relative; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: rgba(0,0,0,0.85); border-bottom: 1px solid var(--accent); backdrop-filter: blur(10px); }
         .grid { position: relative; z-index: 10; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 25px; padding: 40px; height: calc(100vh - 85px); overflow-y: auto; }
         .game-card { background: var(--card); border: 1px solid var(--accent); border-radius: 20px; padding: 30px 15px; text-align: center; cursor: pointer; transition: 0.3s; }
         .game-card:hover { border-color: var(--primary); transform: translateY(-5px); box-shadow: 0 5px 15px rgba(188, 19, 254, 0.2); }
-        
-        /* SETTINGS PANEL */
+
+        /* Settings Panel */
         #settingsPanel { position: fixed; top: 0; right: -350px; width: 320px; height: 100vh; background: rgba(10, 0, 20, 0.98); border-left: 2px solid var(--primary); z-index: 2000; transition: 0.4s; padding: 25px; box-shadow: -10px 0 30px rgba(0,0,0,0.5); }
         #settingsPanel.open { right: 0; }
         
         .search-input { background: #000; border: 1px solid var(--accent); color: white; padding: 10px 15px; border-radius: 8px; outline: none; width: 100%; box-sizing: border-box; }
-        #announcementBar { position: fixed; top: -80px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; padding: 15px 50px; border-radius: 0 0 20px 20px; font-weight: bold; transition: 0.6s; z-index: 6000; box-shadow: 0 0 20px var(--primary); }
+        #announcementBar { position: fixed; top: -80px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; padding: 15px 50px; border-radius: 0 0 20px 20px; font-weight: bold; transition: 0.6s; z-index: 6000; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -81,6 +85,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
+        // --- AUTH ---
         window.handleLogin = function(type) {
             let user = document.getElementById('username').value.trim() || "Guest";
             const pass = btoa(document.getElementById('password').value);
@@ -95,8 +100,9 @@
             sessionStorage.setItem('mUser', user);
             sessionStorage.setItem('mRole', role);
             
-            set(ref(db, 'status/' + user), { name: user, role: role, time: Date.now() });
-            onDisconnect(ref(db, 'status/' + user)).remove();
+            const statusRef = ref(db, 'status/' + user);
+            set(statusRef, { name: user, role: role, time: Date.now() });
+            onDisconnect(statusRef).remove();
 
             document.getElementById('authLayer').classList.add('hidden');
             document.getElementById('arcade').classList.remove('hidden');
@@ -110,6 +116,7 @@
             syncSystem();
         };
 
+        // --- GAME ENGINE ---
         async function loadGames() {
             const res = await fetch(`https://api.github.com/repos/bob154526-hue/Mongle/contents/`);
             const items = await res.json();
@@ -120,16 +127,22 @@
                     const d = document.createElement('div');
                     d.className = 'game-card';
                     d.innerHTML = `<span style="font-size:45px;">👾</span><h3>${cleanName}</h3>`;
-                    d.onclick = () => {
-                        const url = `https://raw.githack.com/bob154526-hue/Mongle/main/${item.name}`;
+                    d.onclick = async () => {
+                        // FIX: Fetch the code and create a local BLOB to prevent "loading as code"
+                        const gameRes = await fetch(item.download_url);
+                        const code = await gameRes.text();
+                        const blob = new Blob([code], {type: 'text/html'});
+                        const blobUrl = URL.createObjectURL(blob);
+                        
                         const win = window.open('about:blank', '_blank');
-                        win.document.write(`<html><body style="margin:0;background:#000;"><iframe src="${url}" style="border:none;width:100vw;height:100vh;"></iframe></body></html>`);
+                        win.document.write(`<html><body style="margin:0;background:#000;"><iframe src="${blobUrl}" style="border:none;width:100vw;height:100vh;"></iframe></body></html>`);
                     };
                     grid.appendChild(d);
                 }
             });
         }
 
+        // --- OWNER CONTROLS ---
         function syncSystem() {
             onValue(ref(db, 'global/maintenance'), (s) => {
                 const isLocked = s.val() !== false;
@@ -151,8 +164,8 @@
                 s.forEach(c => {
                     const u = c.val();
                     const row = document.createElement('div');
-                    row.style = "display:flex; justify-content:space-between; margin-bottom:5px; background:#111; padding:8px; border-radius:5px; border:1px solid #2a004d;";
-                    row.innerHTML = `<span>${u.name}</span><button onclick="kickUser('${c.key}')" style="background:red; color:white; border:none; padding:2px 5px; border-radius:3px; cursor:pointer;">KICK</button>`;
+                    row.style = "display:flex; justify-content:space-between; margin-bottom:5px; background:#111; padding:8px; border-radius:5px;";
+                    row.innerHTML = `<span>${u.name}</span><button onclick="kickUser('${c.key}')" style="background:red; color:white; border:none; cursor:pointer;">KICK</button>`;
                     list.appendChild(row);
                 });
             });
@@ -163,7 +176,7 @@
         window.toggleMaintenance = () => get(ref(db, 'global/maintenance')).then(s => set(ref(db, 'global/maintenance'), !s.val()));
         window.toggleSettings = () => document.getElementById('settingsPanel').classList.toggle('open');
         
-        // Purple Particle Loop
+        // Background particles
         const cvs = document.getElementById('particleCanvas'); const ctx = cvs.getContext('2d');
         let pts = []; function rsz() { cvs.width = window.innerWidth; cvs.height = window.innerHeight; }
         window.onresize = rsz; rsz();
