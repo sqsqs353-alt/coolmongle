@@ -1,20 +1,35 @@
-<div class="box">
-    <h3>Maintenance & Power</h3>
-    <input type="text" id="bgUrl" placeholder="New Background Image URL...">
-    <button onclick="update('globalBG', 'bgUrl')">Set Global Background</button>
-    
-    <input type="text" id="emo" placeholder="New Global Emoji (🔥)">
-    <button onclick="update('globalEmoji', 'emo')">Set Global Icons</button>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Settings</title>
+    <style>
+        body { background: #020617; color: white; font-family: sans-serif; padding: 20px; }
+        .box { background: #0f172a; padding: 20px; border-radius: 12px; border: 1px solid #1e293b; margin-bottom: 20px; max-width: 500px; margin-inline: auto; }
+        .btn { width: 100%; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        .danger { background: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h3>Viewer Settings</h3>
+        <p>Background Image URL:</p>
+        <input type="text" id="bgIn" style="width:90%; padding:8px;" placeholder="Paste URL here...">
+        <button class="btn" onclick="localStorage.setItem('globalBG', document.getElementById('bgIn').value); alert('Done!')">Apply Background</button>
+    </div>
 
-    <button style="background:red" onclick="localStorage.clear(); sessionStorage.clear(); location.reload();">MASTER WIPE</button>
-</div>
+    <div id="adminPanel" class="box" style="display:none; border: 2px solid #ef4444;">
+        <h3 style="color:#ef4444">Admin Tools</h3>
+        <button class="btn" onclick="localStorage.removeItem('mFavs'); alert('Favs cleared')">Reset Favorites</button>
+        <button class="btn danger" onclick="localStorage.clear(); sessionStorage.clear(); location.href='index.html'">FULL FACTORY RESET</button>
+    </div>
 
-<script>
-    function update(key, inputId) {
-        const val = document.getElementById(inputId).value;
-        if(val) {
-            localStorage.setItem(key, val);
-            alert("Update Sent! Games in progress will refresh after they close.");
+    <p style="text-align:center;"><a href="index.html" style="color:#3b82f6">← Back</a></p>
+
+    <script>
+        // Check for Admin
+        if(sessionStorage.getItem('auth') === 'mongle') {
+            document.getElementById('adminPanel').style.display = 'block';
         }
-    }
-</script>
+    </script>
+</body>
+</html>
