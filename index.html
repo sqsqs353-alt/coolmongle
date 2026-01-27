@@ -7,31 +7,38 @@
         :root { --bg: #020617; --card: #0f172a; --accent: #3b82f6; --text: #f8fafc; --term: #4ade80; }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; background-size: cover; background-position: center; background-attachment: fixed; }
         
-        /* LOGIN LAYER */
+        /* LOGIN SCREENS */
         #authLayer { position: fixed; inset: 0; background: #000; z-index: 100000; display: flex; align-items: center; justify-content: center; background-image: radial-gradient(circle at center, #111 0%, #000 100%); }
-        .login-box { width: 380px; padding: 40px; background: rgba(15, 23, 42, 0.9); border: 1px solid #1e293b; border-radius: 20px; text-align: center; backdrop-filter: blur(10px); box-shadow: 0 0 50px rgba(0,0,0,0.5); }
-        .hacker-text { font-family: monospace; color: var(--accent); font-size: 2.5rem; margin: 0; text-shadow: 0 0 15px var(--accent); }
-        .input-field { width: 100%; padding: 12px; margin: 15px 0; background: #000; border: 1px solid #333; color: white; border-radius: 5px; outline: none; }
+        .login-box { width: 400px; padding: 40px; background: rgba(15, 23, 42, 0.95); border: 1px solid #1e293b; border-radius: 20px; text-align: center; box-shadow: 0 0 50px rgba(59, 130, 246, 0.2); }
+        .hacker-title { font-family: monospace; font-size: 3rem; color: var(--accent); margin: 0; text-shadow: 0 0 15px var(--accent); }
+        .update-log { text-align: left; background: #000; padding: 10px; margin-top: 20px; border: 1px solid #333; font-family: monospace; font-size: 0.8rem; color: #94a3b8; }
+        
+        .input-field { width: 100%; padding: 15px; margin: 15px 0; background: #000; border: 1px solid #333; color: white; border-radius: 8px; font-size: 1rem; outline: none; box-sizing: border-box; }
         .input-field:focus { border-color: var(--accent); }
-        .btn { width: 100%; padding: 12px; background: var(--accent); color: white; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; transition: 0.2s; }
+        
+        .btn { width: 100%; padding: 15px; background: var(--accent); color: white; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; font-size: 1rem; }
         .btn:hover { transform: scale(1.02); }
-        .toggle-link { margin-top: 15px; color: #555; font-size: 0.8rem; cursor: pointer; text-decoration: underline; }
+        
+        .toggle-link { margin-top: 20px; color: #555; font-size: 0.8rem; cursor: pointer; text-decoration: underline; }
+        .toggle-link:hover { color: var(--accent); }
 
-        /* ARCADE UI */
+        /* MAIN UI */
         .navbar { background: rgba(15, 23, 42, 0.95); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(5px); }
-        .container { padding: 30px; max-width: 1400px; margin: auto; padding-bottom: 100px; }
+        .container { padding: 30px; max-width: 1400px; margin: auto; padding-bottom: 150px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+        
         .game-card { background: var(--card); border-radius: 15px; padding: 20px; text-align: center; border: 1px solid #1e293b; position: relative; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
         .game-card:hover { transform: translateY(-5px); border-color: var(--accent); }
-        .fav-star { position: absolute; top: 10px; right: 10px; color: rgba(255,255,255,0.1); font-size: 24px; z-index: 10; }
+        .fav-star { position: absolute; top: 10px; right: 10px; color: rgba(255,255,255,0.1); font-size: 24px; z-index: 50; }
         .fav-star.active { color: #fbbf24; text-shadow: 0 0 10px #fbbf24; }
+        .game-card b { display: block; margin-top: 10px; }
 
-        /* ADMIN TOOLBAR (Floating at bottom) */
-        #adminToolbar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e293b; padding: 15px; border-radius: 15px; border: 1px solid #4ade80; display: none; gap: 10px; z-index: 5000; box-shadow: 0 0 20px rgba(74, 222, 128, 0.2); flex-wrap: wrap; justify-content: center; width: 80%; max-width: 800px; }
-        .adm-inp { padding: 8px; background: #000; border: 1px solid #444; color: #fff; border-radius: 5px; width: 120px; }
-        .adm-btn { padding: 8px 15px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; color: #000; }
+        /* ADMIN TOOLBAR */
+        #adminToolbar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #0f172a; padding: 20px; border-radius: 15px; border: 2px solid #3b82f6; display: none; gap: 10px; z-index: 9000; box-shadow: 0 0 30px rgba(0,0,0,0.8); flex-wrap: wrap; justify-content: center; width: 90%; max-width: 900px; }
+        .adm-inp { padding: 10px; background: #000; border: 1px solid #444; color: #fff; border-radius: 5px; width: 140px; }
+        .adm-btn { padding: 10px 15px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; color: white; }
 
-        /* GAME VIEW & PRANKS */
+        /* OVERLAYS */
         #gameView { position: fixed; inset: 0; background: #000; z-index: 50000; display: none; flex-direction: column; }
         iframe { flex-grow: 1; border: none; }
         #hackerScreen { position: fixed; inset: 0; background: black; color: #0f0; font-family: monospace; padding: 20px; z-index: 150000; display: none; pointer-events: none; }
@@ -42,85 +49,95 @@
 
     <div id="authLayer">
         <div id="plebLogin" class="login-box">
-            <h1 class="hacker-text">MONGLE</h1>
-            <p style="color:#64748b; margin-bottom: 20px;">ACCESS DATABASE</p>
-            <input type="text" id="plebName" class="input-field" placeholder="Username...">
-            <button class="btn" onclick="login('pleb')">ENTER</button>
-            <div class="toggle-link" onclick="swapLogin(true)">[ ADMIN LOGIN ]</div>
+            <h1 class="hacker-title">MONGLE</h1>
+            <p style="color:#64748b; letter-spacing: 2px;">PREMIUM ARCADE V6.4</p>
+            
+            <input type="text" id="plebName" class="input-field" placeholder="Create Username...">
+            <button class="btn" onclick="login('pleb')">ENTER DATABASE</button>
+            
+            <div class="update-log">
+                <b style="color:#4ade80">LATEST PATCH:</b><br>
+                - Fixed Favorites Bug<br>
+                - Added About:Blank Cloak<br>
+                - New Admin Toolbar<br>
+                - Prank System Online
+            </div>
+
+            <div class="toggle-link" onclick="swapLogin(true)">[ ADMIN SYSTEM ACCESS ]</div>
         </div>
 
         <div id="adminLogin" class="login-box" style="display:none; border-color: #ef4444;">
-            <h1 class="hacker-text" style="color:#ef4444;">ROOT</h1>
-            <p style="color:#ef4444; margin-bottom: 20px;">RESTRICTED CONTROL</p>
-            <input type="password" id="adminPass" class="input-field" placeholder="Password (1234)">
+            <h1 class="hacker-title" style="color:#ef4444;">ROOT</h1>
+            <p style="color:#ef4444; letter-spacing: 2px;">AUTHORIZED PERSONNEL ONLY</p>
+            
+            <input type="password" id="adminPass" class="input-field" placeholder="Enter Root Key..." style="border-color: #ef4444;">
             <button class="btn" style="background:#ef4444;" onclick="login('admin')">AUTHENTICATE</button>
-            <div class="toggle-link" onclick="swapLogin(false)">[ BACK TO USER ]</div>
+            
+            <div class="toggle-link" onclick="swapLogin(false)">[ RETURN TO GUEST LOGIN ]</div>
         </div>
     </div>
 
     <div id="arcadeUI" style="display:none;">
         <div class="navbar">
             <div>
-                <span style="color:#4ade80; font-weight:bold;">● ONLINE</span>
-                <span id="userTag" style="color:#64748b; margin-left:10px;"></span>
+                <span style="color:#4ade80; font-weight:bold;">● CONNECTED</span>
+                <span id="userTag" style="color:#64748b; margin-left:10px; font-family: monospace;"></span>
             </div>
             <div>
-                <input type="text" id="search" onkeyup="search()" placeholder="Search..." style="padding:8px; border-radius:5px; border:none;">
-                <button class="btn" style="width:auto; margin-left:10px;" onclick="openCloak()">👁️ CLOAK</button>
+                <input type="text" id="search" onkeyup="search()" placeholder="Search..." style="padding:10px; background:#000; border:1px solid #333; color:white; border-radius:5px;">
+                <button class="btn" style="width:auto; margin-left:10px; background:#334155;" onclick="openCloak()">👁️ CLOAK</button>
                 <button class="btn" id="panicBtn" style="width:auto; background:#ef4444; margin-left:10px;">PANIC</button>
             </div>
         </div>
 
         <div class="container">
-            <div id="favSec" style="display:none;"><h2 style="color:#fbbf24;">⭐ Favorites</h2><div id="favGrid" class="grid"></div></div>
-            <div id="fnafSec" style="display:none;"><h2 style="color:#ef4444;">🐻 Freddy's</h2><div id="fnafGrid" class="grid"></div></div>
-            <h2 style="color:var(--accent);">🕹️ All Games</h2>
+            <div id="favSec" style="display:none;"><h2 style="color:#fbbf24; border-left: 5px solid #fbbf24; padding-left:10px;">⭐ FAVORITES</h2><div id="favGrid" class="grid"></div></div>
+            <div id="fnafSec" style="display:none;"><h2 style="color:#ef4444; border-left: 5px solid #ef4444; padding-left:10px;">🐻 FREDDY'S COLLECTION</h2><div id="fnafGrid" class="grid"></div></div>
+            <h2 style="color:var(--accent); border-left: 5px solid var(--accent); padding-left:10px;">🕹️ ALL GAMES</h2>
             <div id="mainGrid" class="grid"></div>
         </div>
 
         <div id="adminToolbar">
-            <b style="color:#4ade80; width:100%; text-align:center;">ADMIN CONTROL PANEL</b>
+            <div style="width:100%; color:#3b82f6; font-weight:bold; margin-bottom:10px;">🔧 ADMIN SETTINGS & PRANKS</div>
             
-            <input id="bgUrl" class="adm-inp" placeholder="BG Image URL">
-            <button class="adm-btn" style="background:#3b82f6;" onclick="saveSetting('mBg', document.getElementById('bgUrl').value)">Set BG</button>
+            <input id="bgInp" class="adm-inp" placeholder="Background URL">
+            <button class="adm-btn" style="background:#3b82f6;" onclick="saveSet('mBg', document.getElementById('bgInp').value)">Set BG</button>
             
-            <input id="emoIcon" class="adm-inp" placeholder="Emoji (e.g. 👾)">
-            <button class="adm-btn" style="background:#3b82f6;" onclick="saveSetting('mEmoji', document.getElementById('emoIcon').value)">Set Emoji</button>
+            <input id="iconInp" class="adm-inp" placeholder="Game Emoji (👾)">
+            <button class="adm-btn" style="background:#3b82f6;" onclick="saveSet('mEmoji', document.getElementById('iconInp').value)">Set Icon</button>
 
-            <input id="panicUrl" class="adm-inp" placeholder="Panic URL">
-            <button class="adm-btn" style="background:#3b82f6;" onclick="saveSetting('mPanic', document.getElementById('panicUrl').value)">Set Panic</button>
+            <input id="panicInp" class="adm-inp" placeholder="Panic URL">
+            <button class="adm-btn" style="background:#3b82f6;" onclick="saveSet('mPanic', document.getElementById('panicInp').value)">Set Panic</button>
 
-            <button class="adm-btn" style="background:#f59e0b;" onclick="triggerPrank('hacker')">🔥 Hacker</button>
-            <button class="adm-btn" style="background:#ef4444;" onclick="triggerPrank('destruct')">☢️ Destroy</button>
-            <button class="adm-btn" style="background:#94a3b8;" onclick="triggerPrank('')">✨ Clear</button>
+            <div style="width:1px; background:#333; margin:0 10px;"></div>
+
+            <button class="adm-btn" style="background:#f59e0b;" onclick="triggerPrank('hacker')">🔥 HACKER</button>
+            <button class="adm-btn" style="background:#ef4444;" onclick="triggerPrank('destruct')">☢️ DEATH</button>
+            <button class="adm-btn" style="background:#10b981;" onclick="triggerPrank('')">✨ CLEAR</button>
         </div>
     </div>
 
-    <div id="gameView"><button class="btn" style="position:absolute; top:10px; left:10px; width:100px; z-index:50001;" onclick="closeGame()">EXIT</button><iframe id="gameFrame"></iframe></div>
-    <div id="destructScreen"><h1>FATAL_ERROR</h1></div>
+    <div id="gameView">
+        <div style="background:#000; padding:10px; display:flex; justify-content:space-between;">
+            <button class="btn" style="width:auto;" onclick="closeGame()">← EXIT GAME</button>
+            <button class="btn" style="width:auto; background:red;" onclick="location.replace(localStorage.getItem('mPanic')||'https://google.com')">PANIC</button>
+        </div>
+        <iframe id="gameFrame"></iframe>
+    </div>
+
+    <div id="destructScreen"><h1>SYSTEM_FAILURE</h1><p>Admin has terminated the session.</p></div>
     <div id="hackerScreen"></div>
 
     <script>
-        const CONFIG = { user: "bob154526-hue", repo: "Mongle", pass: "1234" };
+        const REPO = { user: "bob154526-hue", name: "Mongle", pass: "1234" };
 
-        // 1. INITIAL SETUP
         window.onload = () => {
+            if(sessionStorage.getItem('mUser')) startArcade();
             applySettings();
             checkPranks();
-            if(sessionStorage.getItem('mUser')) startArcade();
         };
 
-        function applySettings() {
-            // Apply Background
-            const bg = localStorage.getItem('mBg');
-            if(bg) document.body.style.backgroundImage = `url('${bg}')`;
-            
-            // Apply Panic Link
-            const panicLink = localStorage.getItem('mPanic') || 'https://google.com';
-            document.getElementById('panicBtn').onclick = () => location.replace(panicLink);
-        }
-
-        // 2. LOGIN LOGIC
+        // --- 1. LOGIN SYSTEM ---
         function swapLogin(isAdmin) {
             document.getElementById('plebLogin').style.display = isAdmin ? 'none' : 'block';
             document.getElementById('adminLogin').style.display = isAdmin ? 'block' : 'none';
@@ -128,16 +145,16 @@
 
         function login(type) {
             if(type === 'pleb') {
-                const name = document.getElementById('plebName').value || "Guest";
-                sessionStorage.setItem('mUser', name);
+                const u = document.getElementById('plebName').value || "User";
+                sessionStorage.setItem('mUser', u);
                 sessionStorage.setItem('mRole', 'pleb');
                 startArcade();
             } else {
-                if(document.getElementById('adminPass').value === CONFIG.pass) {
-                    sessionStorage.setItem('mUser', 'ADMIN');
+                if(document.getElementById('adminPass').value === REPO.pass) {
+                    sessionStorage.setItem('mUser', 'ROOT_ADMIN');
                     sessionStorage.setItem('mRole', 'admin');
                     startArcade();
-                } else { alert("WRONG PASSWORD"); }
+                } else { alert("ACCESS DENIED"); }
             }
         }
 
@@ -146,127 +163,44 @@
             document.getElementById('arcadeUI').style.display = 'block';
             document.getElementById('userTag').innerText = sessionStorage.getItem('mUser').toUpperCase();
             
-            // Show Admin Toolbar if Admin
+            // Show Admin Toolbar ONLY if admin
             if(sessionStorage.getItem('mRole') === 'admin') {
                 document.getElementById('adminToolbar').style.display = 'flex';
+                // Pre-fill inputs
+                document.getElementById('bgInp').value = localStorage.getItem('mBg') || "";
+                document.getElementById('iconInp').value = localStorage.getItem('mEmoji') || "";
+                document.getElementById('panicInp').value = localStorage.getItem('mPanic') || "";
             }
             loadGames();
         }
 
-        // 3. GAME LOADING (FIXED FAVORITES)
-        async function loadGames() {
-            const res = await fetch(`https://api.github.com/repos/${CONFIG.user}/${CONFIG.repo}/contents/`);
-            const files = await res.json();
-            const favs = JSON.parse(localStorage.getItem('mFavs')) || [];
-            const emoji = localStorage.getItem('mEmoji') || "🎮";
-
-            // Clear Grids
-            document.getElementById('mainGrid').innerHTML = "";
-            document.getElementById('favGrid').innerHTML = "";
-            document.getElementById('fnafGrid').innerHTML = "";
-
-            files.forEach(file => {
-                if(!file.name.endsWith('.html') || file.name === 'index.html' || file.name === 'wiki.html') return;
-                
-                const name = file.name.replace('.html','');
-                const isFav = favs.includes(file.name);
-                
-                // Helper to create a card
-                function createCard(isForFavSection) {
-                    const card = document.createElement('div');
-                    card.className = 'game-card';
-                    // We attach the onclick directly here to ensure it works
-                    card.innerHTML = `
-                        <span class="fav-star ${isFav && !isForFavSection ? 'active' : ''}" style="${isForFavSection?'display:none':''}">★</span>
-                        <div style="font-size:40px">${emoji}</div>
-                        <b>${name}</b>
-                    `;
-                    
-                    // Star click logic
-                    if(!isForFavSection) {
-                        card.querySelector('.fav-star').onclick = (e) => {
-                            e.stopPropagation();
-                            toggleFav(file.name);
-                        };
-                    }
-
-                    // Play Click Logic
-                    card.onclick = (e) => {
-                        // Ignore if clicking star
-                        if(e.target.classList.contains('fav-star')) return;
-                        play(file.download_url);
-                    };
-                    return card;
-                }
-
-                // Add to Main Grid (or Freddy)
-                if(name.toLowerCase().includes('fnaf') || name.toLowerCase().includes('freddy')) {
-                    document.getElementById('fnafSec').style.display='block';
-                    document.getElementById('fnafGrid').appendChild(createCard(false));
-                } else {
-                    document.getElementById('mainGrid').appendChild(createCard(false));
-                }
-
-                // Add to Favorites Grid if starred
-                if(isFav) {
-                    document.getElementById('favSec').style.display='block';
-                    document.getElementById('favGrid').appendChild(createCard(true));
-                }
-            });
-        }
-
-        // 4. CORE FUNCTIONS
-        async function play(url) {
-            const r = await fetch(url); const h = await r.text();
-            document.getElementById('gameView').style.display='flex';
-            document.getElementById('gameFrame').srcdoc = h;
-        }
-        function closeGame() { document.getElementById('gameView').style.display='none'; document.getElementById('gameFrame').srcdoc=""; }
-
-        function toggleFav(filename) {
-            let favs = JSON.parse(localStorage.getItem('mFavs')) || [];
-            if(favs.includes(filename)) favs = favs.filter(x => x !== filename);
-            else favs.push(filename);
-            localStorage.setItem('mFavs', JSON.stringify(favs));
-            loadGames(); // Refresh grid
-        }
-
-        function search() {
-            let q = document.getElementById('search').value.toLowerCase();
-            document.querySelectorAll('.game-card').forEach(c => {
-                c.style.display = c.innerText.toLowerCase().includes(q) ? 'block' : 'none';
-            });
-        }
-
-        function openCloak() {
-            let win = window.open('about:blank','_blank');
-            win.document.write(`<body style="margin:0"><iframe src="${location.href}" style="border:0; width:100%; height:100vh;"></iframe></body>`);
-            location.href = "https://google.com";
-        }
-
-        // 5. ADMIN & PRANKS
-        function saveSetting(key, val) {
-            if(!val) return;
-            localStorage.setItem(key, val);
-            alert("Updated! Reloading...");
+        // --- 2. SETTINGS & PRANKS ---
+        function saveSet(key, val) {
+            if(val) localStorage.setItem(key, val);
+            else localStorage.removeItem(key);
+            alert("Setting Saved! Reloading...");
             location.reload();
         }
-
+        function applySettings() {
+            const bg = localStorage.getItem('mBg');
+            if(bg) document.body.style.backgroundImage = `url('${bg}')`;
+            
+            const panic = localStorage.getItem('mPanic') || 'https://google.com';
+            document.getElementById('panicBtn').onclick = () => location.replace(panic);
+        }
         function triggerPrank(p) {
             localStorage.setItem('mPrank', p);
-            // Trigger locally immediately
             checkPranks();
-            alert("Prank Triggered: " + (p || "None"));
+            alert("Prank status: " + (p || "CLEARED"));
         }
-
         function checkPranks() {
             const p = localStorage.getItem('mPrank');
             if(p === 'destruct') {
-                document.getElementById('destructScreen').style.display='flex';
+                document.getElementById('destructScreen').style.display = 'flex';
                 setTimeout(()=>document.getElementById('destructScreen').style.opacity='1', 100);
             } else if(p === 'hacker') {
-                document.getElementById('hackerScreen').style.display='block';
-                setInterval(() => {
+                document.getElementById('hackerScreen').style.display = 'block';
+                setInterval(()=>{
                     let d = document.createElement('div');
                     d.innerText = "> 0x" + Math.random().toString(16).slice(2) + " ... DECRYPTING";
                     document.getElementById('hackerScreen').appendChild(d);
@@ -276,9 +210,88 @@
                 document.getElementById('hackerScreen').style.display='none';
             }
         }
-        
-        // Listen for admin prank updates from other tabs
         window.addEventListener('storage', checkPranks);
+
+        // --- 3. GAME LOADING (FIXED) ---
+        async function loadGames() {
+            const res = await fetch(`https://api.github.com/repos/${REPO.user}/${REPO.name}/contents/`);
+            const files = await res.json();
+            const favs = JSON.parse(localStorage.getItem('mFavs')) || [];
+            const emoji = localStorage.getItem('mEmoji') || "🎮";
+
+            // Clear existing
+            document.getElementById('mainGrid').innerHTML = "";
+            document.getElementById('favGrid').innerHTML = "";
+            document.getElementById('fnafGrid').innerHTML = "";
+
+            files.forEach(file => {
+                if(!file.name.endsWith('.html') || file.name === 'index.html') return;
+                const name = file.name.replace('.html','');
+                const isFav = favs.includes(file.name);
+                
+                // Function to build card
+                const buildCard = (forFavSection) => {
+                    const d = document.createElement('div');
+                    d.className = 'game-card';
+                    d.innerHTML = `<span class="fav-star ${isFav && !forFavSection ? 'active' : ''}" style="${forFavSection?'display:none':''}">★</span>
+                                   <div style="font-size:45px">${emoji}</div><b>${name}</b>`;
+                    
+                    // Click Logic: Separate Star click from Game click
+                    if(!forFavSection) {
+                        d.querySelector('.fav-star').onclick = (e) => {
+                            e.stopPropagation(); // STOP CLICK FROM PLAYING GAME
+                            toggleFav(file.name);
+                        };
+                    }
+                    d.onclick = (e) => {
+                        if(e.target.classList.contains('fav-star')) return;
+                        play(file.download_url);
+                    };
+                    return d;
+                };
+
+                // Add to grids
+                if(isFav) {
+                    document.getElementById('favSec').style.display='block';
+                    document.getElementById('favGrid').appendChild(buildCard(true));
+                }
+                if(name.toLowerCase().includes('fnaf') || name.toLowerCase().includes('freddy')) {
+                    document.getElementById('fnafSec').style.display='block';
+                    document.getElementById('fnafGrid').appendChild(buildCard(false));
+                } else {
+                    document.getElementById('mainGrid').appendChild(buildCard(false));
+                }
+            });
+        }
+
+        // --- 4. UTILS ---
+        async function play(url) {
+            const r = await fetch(url); const h = await r.text();
+            document.getElementById('gameView').style.display='flex';
+            document.getElementById('gameFrame').srcdoc = h;
+        }
+        function closeGame() { document.getElementById('gameView').style.display='none'; document.getElementById('gameFrame').srcdoc=""; }
+        
+        function toggleFav(name) {
+            let f = JSON.parse(localStorage.getItem('mFavs')) || [];
+            if(f.includes(name)) f = f.filter(x=>x!==name);
+            else f.push(name);
+            localStorage.setItem('mFavs', JSON.stringify(f));
+            loadGames();
+        }
+
+        function search() {
+            let q = document.getElementById('search').value.toLowerCase();
+            document.querySelectorAll('.game-card').forEach(c => c.style.display = c.innerText.toLowerCase().includes(q) ? 'block' : 'none');
+        }
+
+        function openCloak() {
+            let win = window.open('about:blank','_blank');
+            if(win) {
+                win.document.write(`<body style="margin:0"><iframe src="${location.href}" style="border:0; width:100%; height:100vh;"></iframe></body>`);
+                location.href = localStorage.getItem('mPanic') || "https://google.com";
+            } else { alert("Allow Popups!"); }
+        }
     </script>
 </body>
 </html>
