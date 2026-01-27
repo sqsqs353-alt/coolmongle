@@ -1,145 +1,184 @@
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, get, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-    // Verified Firebase Config
-    const firebaseConfig = {
-        apiKey: "AIzaSyDgRvxKypPsOx379SNleE6Uij7mKkEJxGY",
-        authDomain: "monglearcade.firebaseapp.com",
-        projectId: "monglearcade",
-        storageBucket: "monglearcade.firebasestorage.app",
-        messagingSenderId: "637983149122",
-        appId: "1:637983149122:web:e6969750929fbb6b1871db"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // --- LOGIN SYSTEM (Owner = MONGLE_OWNER_99) ---
-    window.handleLogin = function(type) {
-        let user = document.getElementById('username').value.trim();
-        const passInput = document.getElementById('password').value;
-        const pass = btoa(passInput);
-        let role = 'pleb';
-
-        // 1. ROOT (OWNER) - Full Control
-        if(type === 'root' && pass === "TU9OR0xFX09XTkVSXzk5") { 
-            role = 'root'; 
-            user = "OWNER_" + Math.floor(Math.random()*99); 
-        } 
-        // 2. ADMIN - Limited Access
-        else if(type === 'admin' && pass === "MTIzNA==") { 
-            role = 'admin'; 
-            user = "MOD_" + Math.floor(Math.random()*999); 
-        } 
-        // 3. PLEB - Just a user
-        else if(type === 'pleb' && user) { 
-            role = 'pleb'; 
-        } else { 
-            return alert("Access Denied: Check your Key"); 
-        }
-
-        sessionStorage.setItem('mUser', user);
-        sessionStorage.setItem('mRole', role);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Google Drive</title>
+    <link id="favicon" rel="icon" href="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png">
+    <style>
+        :root { --primary: #00d2ff; --bg: #000810; --card: rgba(0, 18, 32, 0.9); --accent: #002233; --panic: #ef4444; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #e2e8f0; font-family: sans-serif; overflow: hidden; }
         
-        const myRef = ref(db, 'status/' + user.replace(/\s+/g, '_'));
-        onDisconnect(myRef).remove();
-        set(myRef, { name: user, role: role, time: Date.now() });
+        /* Particle Layer */
+        #particleCanvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
-        document.getElementById('authLayer').style.display = 'none';
-        document.getElementById('arcade').style.display = 'block';
+        /* UI Layers */
+        #authLayer { position: fixed; inset: 0; background: #000; z-index: 2000; display: flex; align-items: center; justify-content: center; }
+        .login-box { width: 350px; padding: 40px; background: #000; border: 1px solid var(--accent); border-radius: 12px; text-align: center; box-shadow: 0 0 30px rgba(0, 210, 255, 0.1); }
         
-        // Setup Console for Staff
-        if(role === 'root' || role === 'admin') {
-            document.getElementById('settingsBtn').style.display = 'block';
-            window.addEventListener('keydown', (e) => { if(e.key === '`') toggleSettings(); });
+        .top-bar { position: relative; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: rgba(0,0,0,0.8); border-bottom: 1px solid var(--accent); }
+        .grid { position: relative; z-index: 10; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; padding: 40px; height: calc(100vh - 85px); overflow-y: auto; }
+        
+        .game-card { background: var(--card); border: 1px solid var(--accent); border-radius: 15px; padding: 25px 10px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .game-card:hover { border-color: var(--primary); transform: translateY(-5px); }
+
+        /* Console Panel */
+        #settingsPanel { position: fixed; top: 0; right: -350px; width: 300px; height: 100vh; background: rgba(0,5,10,0.98); border-left: 2px solid var(--primary); z-index: 1500; transition: 0.4s; padding: 25px; }
+        #settingsPanel.open { right: 0; }
+
+        .search-input { background: #000; border: 1px solid #004466; color: white; padding: 8px 12px; border-radius: 5px; outline: none; }
+        #announcementBar { position: fixed; top: -70px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #000; padding: 12px 30px; border-radius: 0 0 10px 10px; font-weight: bold; transition: 0.5s; z-index: 3000; }
+    </style>
+</head>
+<body>
+    <canvas id="particleCanvas"></canvas>
+    <div id="announcementBar">SYSTEM MESSAGE</div>
+
+    <div id="authLayer">
+        <div class="login-box">
+            <h1 style="color:var(--primary); letter-spacing:5px;">MONGLE</h1>
+            <input type="text" id="username" class="search-input" style="width:90%; margin-bottom:10px;" placeholder="Username">
+            <input type="password" id="password" class="search-input" style="width:90%; margin-bottom:20px;" placeholder="Security Key">
+            <button class="search-input" style="width:100%; background:var(--primary); color:#000; font-weight:bold; cursor:pointer;" onclick="handleLogin('pleb')">ACCESS</button>
+            <button onclick="handleLogin('root')" style="margin-top:20px; background:none; border:none; color:#222; cursor:pointer; font-size:10px;">ROOT</button>
+        </div>
+    </div>
+
+    <div id="arcade" style="display:none;">
+        <div class="top-bar">
+            <div id="liveClock" style="color:var(--primary); font-weight:bold;">00:00:00</div>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="gameSearch" class="search-input" placeholder="Search..." oninput="filterGames()">
+                <button id="settingsBtn" class="search-input" style="display:none; color:var(--primary); cursor:pointer;" onclick="toggleSettings()">⚙️</button>
+                <button class="search-input" style="background:var(--panic); color:white; border:none;" onclick="location.replace('https://classroom.google.com')">Panic</button>
+            </div>
+        </div>
+        <div class="grid" id="gameGrid"></div>
+    </div>
+
+    <div id="settingsPanel">
+        <h3 id="staffTitle" style="color:var(--primary);">OWNER CONSOLE</h3>
+        <button id="maintBtn" class="search-input" style="width:100%; background:#111; color:white; display:none;" onclick="toggleMaintenance()">TOGGLE LOCKDOWN</button>
+        <div id="userListArea" style="margin-top:20px; display:none;">
+            <h4 style="font-size:12px; color:#58a;">ACTIVE PLEBS</h4>
+            <div id="userList"></div>
+        </div>
+        <div style="margin-top:20px;">
+            <label style="font-size:10px;">BROADCAST</label>
+            <input type="text" id="broadcastMsg" class="search-input" style="width:100%; margin-top:5px;" placeholder="Send alert...">
+            <button class="search-input" style="width:100%; margin-top:5px; background:var(--primary); color:#000;" onclick="sendBroadcast()">SEND</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, get, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDgRvxKypPsOx379SNleE6Uij7mKkEJxGY",
+            authDomain: "monglearcade.firebaseapp.com",
+            projectId: "monglearcade",
+            storageBucket: "monglearcade.firebasestorage.app",
+            messagingSenderId: "637983149122",
+            appId: "1:637983149122:web:e6969750929fbb6b1871db"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // LOGIN (Root PW: MONGLE_OWNER_99)
+        window.handleLogin = function(type) {
+            let user = document.getElementById('username').value.trim() || "Guest";
+            const pass = btoa(document.getElementById('password').value);
+            let role = 'pleb';
+
+            if(type === 'root' && pass === "TU9OR0xFX09XTkVSXzk5") { 
+                role = 'root'; user = "OWNER_" + Math.floor(Math.random()*99); 
+            } else if(type === 'pleb' && user) { 
+                role = 'pleb'; 
+            } else { return alert("Denied"); }
+
+            sessionStorage.setItem('mUser', user);
+            sessionStorage.setItem('mRole', role);
             
-            // Only Owner can see the Kick List and Maintenance Toggle
+            set(ref(db, 'status/' + user.replace(/\s+/g, '_')), { name: user, role: role, time: Date.now() });
+            onDisconnect(ref(db, 'status/' + user.replace(/\s+/g, '_'))).remove();
+
+            document.getElementById('authLayer').style.display = 'none';
+            document.getElementById('arcade').style.display = 'block';
+            
             if(role === 'root') {
+                document.getElementById('settingsBtn').style.display = 'block';
                 document.getElementById('maintBtn').style.display = 'block';
-                document.getElementById('userList').parentElement.style.display = 'block';
-                trackUsers(); 
-            } else {
-                document.getElementById('maintBtn').style.display = 'none';
-                document.getElementById('userList').parentElement.style.display = 'none';
+                document.getElementById('userListArea').style.display = 'block';
+                window.addEventListener('keydown', (e) => { if(e.key === '`') toggleSettings(); });
+                trackUsers();
             }
-        }
-        
-        loadGames();
-        listenGlobalEvents();
-    };
+            loadGames();
+            listenGlobals();
+        };
 
-    // --- GAME ENGINE (cdn.jsdelivr.net fix) ---
-    async function loadGames() {
-        const res = await fetch(`https://api.github.com/repos/bob154526-hue/Mongle/contents/`);
-        const items = await res.json();
-        const grid = document.getElementById('gameGrid'); grid.innerHTML = "";
-        items.forEach(item => {
-            if(item.name.endsWith('.html') && item.name !== 'index.html') {
-                const cleanName = item.name.replace('.html', '').replace(/_/g, ' ');
-                const d = document.createElement('div');
-                d.className = 'game-card';
-                d.innerHTML = `<span class="game-logo">🎮</span><h3>${cleanName}</h3>`;
-                d.onclick = () => {
-                    const cdnUrl = `https://cdn.jsdelivr.net/gh/bob154526-hue/Mongle@main/${item.name}`;
-                    const win = window.open('about:blank', '_blank');
-                    win.document.write(`<html><body style="margin:0;background:#000;"><iframe src="${cdnUrl}" style="border:none;width:100vw;height:100vh;"></iframe></body></html>`);
-                };
-                grid.appendChild(d);
-            }
-        });
-    }
-
-    // --- STAFF TOOLS & WATCHDOG ---
-    function listenGlobalEvents() {
-        const myID = sessionStorage.getItem('mUser').replace(/\s+/g, '_');
-        
-        // 1. Lockdown Check
-        onValue(ref(db, 'global/maintenance'), (snap) => {
-            if(snap.val() && sessionStorage.getItem('mRole') === 'pleb') {
-                location.replace('https://classroom.google.com');
-            }
-        });
-
-        // 2. Kick Check
-        onValue(ref(db, 'kicks/' + myID), (snap) => {
-            if(snap.val()) {
-                remove(ref(db, 'kicks/' + myID));
-                location.replace('https://classroom.google.com');
-            }
-        });
-
-        // 3. Broadcasts
-        onValue(ref(db, 'global/announcement'), (snap) => {
-            const data = snap.val(); if(!data) return;
-            const bar = document.getElementById('announcementBar');
-            bar.innerText = data.text; bar.style.top = "0px";
-            setTimeout(() => { bar.style.top = "-70px"; }, 7000);
-        });
-    }
-
-    function trackUsers() {
-        onValue(ref(db, 'status'), (snap) => {
-            const list = document.getElementById('userList');
-            list.innerHTML = "";
-            snap.forEach(child => {
-                const u = child.val();
-                const row = document.createElement('div');
-                row.style = "display:flex; justify-content:space-between; margin-bottom:5px; background:#000; padding:5px; border-radius:4px; font-size:11px;";
-                row.innerHTML = `<span>${u.name}</span> <button onclick="kickUser('${child.key}')" style="background:red; color:white; border:none; border-radius:3px; cursor:pointer;">KICK</button>`;
-                list.appendChild(row);
+        async function loadGames() {
+            const res = await fetch(`https://api.github.com/repos/bob154526-hue/Mongle/contents/`);
+            const items = await res.json();
+            const grid = document.getElementById('gameGrid'); grid.innerHTML = "";
+            items.forEach(item => {
+                if(item.name.endsWith('.html') && item.name !== 'index.html') {
+                    const cleanName = item.name.replace('.html', '').replace(/_/g, ' ');
+                    const d = document.createElement('div');
+                    d.className = 'game-card';
+                    d.innerHTML = `<span style="font-size:40px; display:block; margin-bottom:10px;">🎮</span><h3>${cleanName}</h3>`;
+                    d.onclick = () => {
+                        const cdnUrl = `https://cdn.jsdelivr.net/gh/bob154526-hue/Mongle@main/${item.name}`;
+                        const win = window.open('about:blank', '_blank');
+                        win.document.write(`<html><body style="margin:0;background:#000;"><iframe src="${cdnUrl}" style="border:none;width:100vw;height:100vh;"></iframe></body></html>`);
+                    };
+                    grid.appendChild(d);
+                }
             });
-        });
-    }
+        }
 
-    window.kickUser = (id) => { remove(ref(db, 'status/' + id)); set(ref(db, 'kicks/' + id), true); };
-    window.sendBroadcast = () => {
-        const msg = document.getElementById('broadcastMsg').value;
-        set(ref(db, 'global/announcement'), { text: msg, time: Date.now() });
-        document.getElementById('broadcastMsg').value = "";
-    };
-    window.toggleMaintenance = () => {
-        get(ref(db, 'global/maintenance')).then(s => set(ref(db, 'global/maintenance'), !s.val()));
-    };
-    window.toggleSettings = () => document.getElementById('settingsPanel').classList.toggle('open');
-</script>
+        function trackUsers() {
+            onValue(ref(db, 'status'), (snap) => {
+                const list = document.getElementById('userList'); list.innerHTML = "";
+                snap.forEach(c => {
+                    const u = c.val();
+                    const row = document.createElement('div');
+                    row.style = "display:flex; justify-content:space-between; margin-bottom:5px; background:#000; padding:5px; border-radius:4px; font-size:11px;";
+                    row.innerHTML = `<span>${u.name}</span><button onclick="kickUser('${c.key}')" style="background:red; color:white; border:none; cursor:pointer;">KICK</button>`;
+                    list.appendChild(row);
+                });
+            });
+        }
+
+        function listenGlobals() {
+            const myID = sessionStorage.getItem('mUser').replace(/\s+/g, '_');
+            onValue(ref(db, 'global/maintenance'), s => {
+                if(s.val() && sessionStorage.getItem('mRole') === 'pleb') location.replace('https://classroom.google.com');
+            });
+            onValue(ref(db, 'global/announcement'), s => {
+                const d = s.val(); if(!d) return;
+                const b = document.getElementById('announcementBar');
+                b.innerText = d.text; b.style.top = "0px";
+                setTimeout(() => b.style.top = "-70px", 6000);
+            });
+        }
+
+        window.kickUser = (id) => set(ref(db, 'kicks/' + id), true);
+        window.sendBroadcast = () => set(ref(db, 'global/announcement'), { text: document.getElementById('broadcastMsg').value });
+        window.toggleMaintenance = () => get(ref(db, 'global/maintenance')).then(s => set(ref(db, 'global/maintenance'), !s.val()));
+        window.toggleSettings = () => document.getElementById('settingsPanel').classList.toggle('open');
+        
+        // Particles
+        const cvs = document.getElementById('particleCanvas'); const ctx = cvs.getContext('2d');
+        let pts = []; function rsz() { cvs.width = window.innerWidth; cvs.height = window.innerHeight; }
+        window.onresize = rsz; rsz();
+        for(let i=0; i<50; i++) pts.push({x: Math.random()*cvs.width, y: Math.random()*cvs.height, v: Math.random()*0.5});
+        function loop() {
+            ctx.clearRect(0,0,cvs.width,cvs.height); ctx.fillStyle = "rgba(0, 210, 255, 0.2)";
+            pts.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 1, 0, 7); ctx.fill(); p.y -= p.v; if(p.y<0) p.y=cvs.height; });
+            requestAnimationFrame(loop);
+        }
+        loop();
+        setInterval(() => { document.getElementById('liveClock').innerText = new Date().toLocaleTimeString(); }, 1000);
+    </script>
+</body>
+</html>
