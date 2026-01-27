@@ -1,49 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Settings</title>
+    <title>Admin</title>
     <style>
         body { background: #020617; color: white; font-family: sans-serif; padding: 40px; text-align: center; }
         .box { background: #0f172a; border: 1px solid #334155; padding: 25px; border-radius: 15px; max-width: 450px; margin: auto; }
         .btn { width: 100%; padding: 12px; margin: 8px 0; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; background: #3b82f6; }
-        .btn-red { background: #ef4444; }
-        .btn-green { background: #10b981; }
-        hr { border: 0; border-top: 1px solid #334155; margin: 20px 0; }
+        input { width: 80%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #333; background: #000; color: white; }
     </style>
 </head>
 <body>
 
-    <div class="box">
-        <h3>User Settings</h3>
-        <button class="btn" onclick="location.href='index.html'">← Back to Games</button>
+    <div class="box" id="adminPanel" style="display:none;">
+        <h2 style="color:#ef4444">🛡️ SYSTEM OVERLORD</h2>
         
-        <div id="adminPanel" style="display:none;">
-            <hr>
-            <h3 style="color:#ef4444">🛡️ PRANK CONTROL</h3>
-            
-            <button class="btn" onclick="setPrank('hacker')">💻 TRIGGER FAKE HACKER</button>
-            <button class="btn btn-red" onclick="setPrank('destruct')">☢️ TRIGGER INSTANT DEATH</button>
-            
-            <button class="btn btn-green" style="margin-top:20px;" onclick="setPrank('')">✨ CLEAR ALL PRANKS</button>
-            
-            <hr>
-            <p>Global Emoji Override:</p>
-            <input type="text" id="emoIn" placeholder="Enter Emoji..." style="width:80%; padding:10px; border-radius:5px;">
-            <button class="btn" onclick="localStorage.setItem('mEmoji', document.getElementById('emoIn').value); alert('Updated!')">Save Emoji</button>
-        </div>
+        <p>Set Auto-Lock Timer (Minutes):</p>
+        <input type="number" id="timerMins" placeholder="Minutes (e.g. 30)">
+        <button class="btn" onclick="setTimer()">START COUNTDOWN</button>
+        <button class="btn" style="background:#444" onclick="localStorage.removeItem('mLockUntil'); alert('Timer Cancelled')">CANCEL TIMER</button>
+
+        <hr style="margin:20px 0; border:0; border-top:1px solid #333;">
+        
+        <button class="btn" style="background:#ef4444" onclick="localStorage.setItem('mPrank', 'hacker'); alert('Hacker Mode Active!')">💻 HACKER PRANK</button>
+        <button class="btn" style="background:#ef4444" onclick="localStorage.setItem('mPrank', 'destruct'); alert('Death Screen Active!')">☢️ SELF DESTRUCT</button>
+        <button class="btn" style="background:#10b981" onclick="localStorage.setItem('mPrank', ''); localStorage.setItem('mMaint','false'); alert('System Restored!')">✨ CLEAR ALL</button>
     </div>
 
     <script>
-        // Only show if logged in as admin
         if(sessionStorage.getItem('mAuth') === 'mongle') {
             document.getElementById('adminPanel').style.display = 'block';
         }
 
-        function setPrank(val) {
-            localStorage.setItem('mPrank', val);
-            // Manually trigger the storage event for the current window if testing
-            window.dispatchEvent(new Event('storage'));
-            alert(val ? "Prank Armed!" : "Arcade Restored!");
+        function setTimer() {
+            const mins = document.getElementById('timerMins').value;
+            if(!mins) return;
+            const expire = Date.now() + (mins * 60000);
+            localStorage.setItem('mLockUntil', expire);
+            alert(`Site will lock in ${mins} minutes!`);
         }
     </script>
 </body>
