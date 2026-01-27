@@ -5,224 +5,164 @@
     <title>Google Drive</title>
     <link id="favicon" rel="icon" href="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png">
     <style>
-        :root { --primary: #00ff41; --bg: #000500; --card: rgba(0, 20, 0, 0.9); --accent: #003b00; --hacked: #ff0000; }
+        :root { --primary: #00ff41; --bg: #000500; --card: rgba(10, 10, 10, 0.95); --accent: #003b00; --gold: #ffd700; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--primary); font-family: 'Courier New', monospace; overflow: hidden; }
 
-        /* VERSION TAG */
-        #versionTag { position: fixed; bottom: 10px; left: 10px; font-size: 10px; color: #004400; z-index: 10000; }
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
 
-        /* LOCKDOWN WHITE SCREEN */
-        #lockdownScreen { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: black; }
+        /* GRID & HEADERS */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; padding: 30px; height: calc(100vh - 100px); overflow-y: auto; align-content: start; }
         
-        /* HACKED SCREEN OVERLAY */
-        #hackedOverlay { position: fixed; inset: 0; background: #000; color: var(--hacked); z-index: 8000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: none; }
-        .glitch { font-size: 60px; font-weight: bold; text-shadow: 4px 4px #550000; animation: shake 0.1s infinite; }
-        @keyframes shake { 0% { transform: translate(2px, 2px); } 50% { transform: translate(-2px, -2px); } 100% { transform: translate(2px, -2px); } }
+        .category-header { 
+            grid-column: 1 / -1; 
+            color: var(--gold); 
+            border-bottom: 2px solid var(--gold); 
+            margin: 30px 0 10px 0; 
+            padding-bottom: 5px; 
+            font-size: 22px; 
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+            text-transform: uppercase;
+        }
+        .category-header:first-child { margin-top: 0; }
 
-        /* MAIN UI */
-        #mainApp { display: none; height: 100%; }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--primary); z-index: 100; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; padding: 30px; height: calc(100vh - 100px); overflow-y: auto; }
+        /* GAME CARDS */
+        .game-card { 
+            background: var(--card); 
+            border: 1px solid var(--accent); 
+            border-radius: 12px; 
+            padding: 15px; 
+            text-align: center; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            position: relative;
+            overflow: hidden;
+        }
+        .game-card:hover { border-color: var(--primary); transform: translateY(-5px); box-shadow: 0 0 20px rgba(0, 255, 65, 0.2); }
         
-        .game-card { background: var(--card); border: 1px solid var(--accent); border-radius: 8px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; }
-        .game-card:hover { border-color: var(--primary); transform: scale(1.05); }
-        .game-icon { width: 100%; aspect-ratio: 1; border-radius: 5px; object-fit: cover; margin-bottom: 10px; background: #111; }
+        .game-icon { width: 100%; aspect-ratio: 1; border-radius: 8px; object-fit: cover; margin-bottom: 12px; background: #111; border: 1px solid #222; }
+        
+        .fav-star {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            color: #333;
+            transition: 0.2s;
+            z-index: 10;
+        }
+        .fav-star.active { color: var(--gold); text-shadow: 0 0 10px var(--gold); }
+        .fav-star:hover { transform: scale(1.2); }
 
-        .side-panel { position: fixed; top: 0; right: -350px; width: 320px; height: 100vh; background: #000; border-left: 2px solid var(--primary); z-index: 2000; transition: 0.4s; padding: 25px; }
-        .side-panel.open { right: 0; }
-        .input-box { background: #000; border: 1px solid var(--primary); color: var(--primary); padding: 10px; width: 100%; box-sizing: border-box; margin-bottom: 10px; outline: none; }
-        .hidden { display: none !important; }
+        /* TOP BAR */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: rgba(0,0,0,0.95); border-bottom: 1px solid var(--primary); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .input-box { background: #000; border: 1px solid var(--primary); color: var(--primary); padding: 10px 15px; width: 300px; border-radius: 5px; outline: none; font-family: inherit; }
     </style>
 </head>
 <body>
 
-    <div id="versionTag">BUILD_V2.4.27_JAN2026</div>
-
-    <div id="lockdownScreen">
-        <h1>404 Not Found</h1>
-        <p>The requested URL was not found on this server.</p>
-    </div>
-
-    <div id="hackedOverlay">
-        <div class="glitch">⚠ SYSTEM FAILURE ⚠</div>
-        <h1 style="font-size: 40px; margin: 20px 0;">HACKED BY MONGLE</h1>
-        <p id="hackedMsg" style="letter-spacing: 3px;">INITIALIZING DATA WIPE...</p>
-    </div>
-
     <div id="mainApp">
-        <div id="authLayer" style="position:fixed; inset:0; background:#000; z-index:5000; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-            <div id="loginStatus" style="margin-bottom:15px; font-size:12px; border:1px solid var(--primary); padding:5px 15px;">STATUS: CONNECTING...</div>
-            <div style="width:340px; padding:40px; border:1px solid var(--primary); text-align:center;">
-                <h2>MONGLE_OS</h2>
-                <div style="text-align:left; font-size:9px; color:#006600; margin-bottom:15px; border:1px solid #002200; padding:10px; background:#000800;">
-                    <b style="color:var(--primary)">[VER 2.4 UPDATES]</b><br>
-                    > Global Alarm Hack Sync<br>
-                    > Build Version Tracking Added<br>
-                    > Lockdown Setting Persistence
-                </div>
-                <input type="text" id="username" class="input-box" placeholder="USER_ID">
-                <input type="password" id="password" class="input-box" placeholder="SEC_KEY">
-                <button class="input-box" style="background:var(--primary); color:#000; font-weight:bold;" onclick="handleLogin('pleb')">INITIALIZE</button>
-                <div style="display:flex; gap:10px;">
-                    <button class="input-box" style="font-size:10px;" onclick="handleLogin('admin')">ADMIN</button>
-                    <button class="input-box" style="font-size:10px;" onclick="handleLogin('root')">ROOT</button>
-                </div>
-            </div>
+        <div class="top-bar">
+            <div style="font-weight: bold; letter-spacing: 2px;">MONGLE_ARCADE <span style="font-size: 10px; color: #444;">v2.5.0</span></div>
+            <div id="liveClock" style="color: var(--primary); font-size: 18px;">00:00:00</div>
+            <input type="text" id="gameSearch" class="input-box" placeholder="SEARCH_DATABASE..." onkeyup="renderGames()">
         </div>
-
-        <div id="arcade" class="hidden">
-            <div class="top-bar">
-                <div id="liveClock">00:00:00</div>
-                <div style="display:flex; gap:12px; align-items:center;">
-                    <input type="text" id="gameSearch" class="input-box" style="width:250px; margin:0;" placeholder="Search_DB..." onkeyup="renderGames()">
-                    <button id="ownerBtn" class="input-box" style="display:none; width:auto; margin:0; color:gold; border-color:gold;" onclick="togglePanel('ownerSettings')">👑</button>
-                    <button class="input-box" style="width:auto; margin:0;" onclick="togglePanel('userSettings')">⚙️</button>
-                    <button class="input-box" style="background:red; color:white; border:none; width:auto; margin:0;" onclick="doPanic()">PANIC</button>
-                </div>
-            </div>
-            <div class="grid" id="gameGrid"></div>
-        </div>
-
-        <div id="ownerSettings" class="side-panel">
-            <h3 style="color:gold;">ROOT_OVERLORD</h3>
-            <button id="maintBtn" class="input-box" onclick="toggleMaintenance()">LOCKDOWN: ON</button>
-            <button class="input-box" style="border-color: #0044ff; color: #0044ff;" onclick="forceUpdate()">FORCE_GLOBAL_UPDATE</button>
-            <hr style="border-color: #333; margin: 20px 0;">
-            <h4 style="color:red; font-size:11px;">HACKER_TOOLS (ALARM)</h4>
-            <input type="text" id="customHackMsg" class="input-box" placeholder="Custom Hack Message...">
-            <button class="input-box" style="background:red; color:white;" onclick="triggerHack(true)">EXECUTE_ALARM_HACK</button>
-            <button class="input-box" style="background:green; color:white;" onclick="triggerHack(false)">TERMINATE_HACK</button>
-        </div>
-
-        <div id="userSettings" class="side-panel">
-            <h3>USER_CONFIG</h3>
-            <input type="text" id="prefUrl" class="input-box" placeholder="Panic URL">
-            <input type="text" id="prefKey" class="input-box" placeholder="Panic Key">
-            <button class="input-box" style="background:var(--primary); color:#000;" onclick="saveUserPrefs()">SAVE</button>
-        </div>
+        <div class="grid" id="gameGrid"></div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDgRvxKypPsOx379SNleE6Uij7mKkEJxGY",
-            authDomain: "monglearcade.firebaseapp.com",
-            projectId: "monglearcade",
-            databaseURL: "https://monglearcade-default-rtdb.firebaseio.com",
-            appId: "1:637983149122:web:e6969750929fbb6b1871db"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-
+    <script>
         let allGames = [];
-        let audioCtx = null;
-        let alarmOsc = null;
-        const currentVersion = "2.4.27"; // UPDATE THIS WHEN YOU CHANGE THE CODE
-
-        // SHIFT + L BYPASS
-        document.addEventListener('keydown', (e) => {
-            if (e.shiftKey && e.key === 'L') {
-                document.getElementById('lockdownScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'block';
-                sessionStorage.setItem('bypassed', 'true');
-            }
-        });
-
-        window.handleLogin = (type) => {
-            const pass = btoa(document.getElementById('password').value);
-            let role = (type === 'root' && pass === "TU9OR0xFX09XTkVSXzk5") ? 'root' : 'pleb';
-            sessionStorage.setItem('mRole', role);
-            if(role === 'root') document.getElementById('ownerBtn').style.display = 'block';
-            document.getElementById('authLayer').classList.add('hidden');
-            document.getElementById('arcade').classList.remove('hidden');
-            fetchGames();
-            syncSystem();
-        };
+        let favorites = JSON.parse(localStorage.getItem('mongle_favs')) || [];
 
         async function fetchGames() {
-            const res = await fetch(`https://api.github.com/repos/bob154526-hue/Mongle/contents/`);
-            const items = await res.json();
-            allGames = items.filter(i => i.name.endsWith('.html') && i.name !== 'index.html');
-            renderGames();
+            try {
+                const res = await fetch(`https://api.github.com/repos/bob154526-hue/Mongle/contents/`);
+                const items = await res.json();
+                // Filter for HTML files and ignore index
+                allGames = items.filter(i => i.name.endsWith('.html') && i.name !== 'index.html');
+                renderGames();
+            } catch (e) {
+                console.error("Critical: Database Unreachable.");
+            }
         }
+
+        window.toggleFav = (e, filename) => {
+            e.stopPropagation(); // Prevents opening the game when clicking the star
+            if (favorites.includes(filename)) {
+                favorites = favorites.filter(f => f !== filename);
+            } else {
+                favorites.push(filename);
+            }
+            localStorage.setItem('mongle_favs', JSON.stringify(favorites));
+            renderGames();
+        };
 
         window.renderGames = () => {
+            const query = document.getElementById('gameSearch').value.toLowerCase();
             const grid = document.getElementById('gameGrid');
             grid.innerHTML = "";
+
+            const groups = {
+                "⭐ Favorites": [],
+                "🐻 Freddy's Collection": [],
+                "🕹️ All Games": []
+            };
+            
             allGames.forEach(game => {
-                const name = game.name.replace('.html', '').replace(/_/g, ' ');
-                const card = document.createElement('div');
-                card.className = 'game-card';
-                card.innerHTML = `<img class="game-icon" src="https://raw.githubusercontent.com/bob154526-hue/Mongle/main/icons/${game.name.replace('.html', '.png')}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/686/686588.png'"><div>${name}</div>`;
-                card.onclick = () => window.open(`https://raw.githack.com/bob154526-hue/Mongle/main/${game.name}`, '_blank');
-                grid.appendChild(card);
-            });
-        };
+                const filename = game.name;
+                const name = filename.replace('.html', '').replace(/_/g, ' ');
+                if (query && !name.toLowerCase().includes(query)) return;
 
-        // SIREN
-        function startAlarm() {
-            if (alarmOsc) return;
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            alarmOsc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            alarmOsc.type = 'sawtooth';
-            alarmOsc.frequency.setValueAtTime(440, audioCtx.currentTime);
-            alarmOsc.connect(gain);
-            gain.connect(audioCtx.destination);
-            gain.gain.value = 0.3;
-            setInterval(() => { if(alarmOsc) alarmOsc.frequency.exponentialRampToValueAtTime(Math.random() > 0.5 ? 800 : 400, audioCtx.currentTime + 0.2); }, 200);
-            alarmOsc.start();
-        }
+                const isFav = favorites.includes(filename);
+                const gameObj = {
+                    name: name,
+                    filename: filename,
+                    isFav: isFav,
+                    url: `https://raw.githack.com/bob154526-hue/Mongle/main/${filename}`,
+                    icon: `https://raw.githubusercontent.com/bob154526-hue/Mongle/main/icons/${filename.replace('.html', '.png')}`
+                };
 
-        function stopAlarm() { if (alarmOsc) { alarmOsc.stop(); alarmOsc = null; } }
+                // Logic: 1. Favorites | 2. Freddy Group | 3. General
+                const lowName = name.toLowerCase();
+                const isFreddy = lowName.includes('freddy') || lowName.includes('fnaf') || lowName.includes('sister location') || lowName.includes('custom night') || lowName.includes('pizza simulator');
 
-        window.triggerHack = (state) => {
-            const msg = document.getElementById('customHackMsg').value || "ALL DATA IS BEING DELETED...";
-            set(ref(db, 'global/hack'), { active: state, message: msg });
-        };
-
-        window.forceUpdate = () => {
-            set(ref(db, 'global/update'), Date.now());
-            alert("Update command sent to all users.");
-        };
-
-        function syncSystem() {
-            // Maintenance
-            onValue(ref(db, 'global/maintenance'), (s) => {
-                const isLocked = s.val() !== false;
-                document.getElementById('loginStatus').innerText = isLocked ? "STATUS: [LOCKED]" : "STATUS: [OPERATIONAL]";
-                if(isLocked && sessionStorage.getItem('mRole') === 'pleb' && !sessionStorage.getItem('bypassed')) location.reload();
-                if(document.getElementById('maintBtn')) document.getElementById('maintBtn').innerText = isLocked ? "LOCKDOWN: ON" : "LOCKDOWN: OFF";
-            });
-
-            // Hack
-            onValue(ref(db, 'global/hack'), (s) => {
-                const data = s.val();
-                if(data && data.active && sessionStorage.getItem('mRole') === 'pleb') {
-                    document.getElementById('hackedOverlay').style.display = 'flex';
-                    document.getElementById('hackedMsg').innerText = data.message;
-                    window.onclick = () => startAlarm();
+                if (isFav) {
+                    groups["⭐ Favorites"].push(gameObj);
+                } else if (isFreddy) {
+                    groups["🐻 Freddy's Collection"].push(gameObj);
                 } else {
-                    document.getElementById('hackedOverlay').style.display = 'none';
-                    stopAlarm();
+                    groups["🕹️ All Games"].push(gameObj);
                 }
             });
 
-            // Force Refresh logic
-            onValue(ref(db, 'global/update'), (s) => {
-                if(s.exists() && !sessionStorage.getItem('root')) location.reload();
-            });
-        }
+            // Render categories
+            for (const [title, games] of Object.entries(groups)) {
+                if (games.length === 0) continue;
+                
+                const head = document.createElement('div');
+                head.className = 'category-header';
+                head.innerText = title;
+                grid.appendChild(head);
 
-        window.toggleMaintenance = () => get(ref(db, 'global/maintenance')).then(s => set(ref(db, 'global/maintenance'), !s.val()));
-        window.togglePanel = (id) => {
-            document.querySelectorAll('.side-panel').forEach(p => p.classList.remove('open'));
-            document.getElementById(id).classList.toggle('open');
+                games.forEach(g => {
+                    const card = document.createElement('div');
+                    card.className = 'game-card';
+                    card.innerHTML = `
+                        <div class="fav-star ${g.isFav ? 'active' : ''}" onclick="toggleFav(event, '${g.filename}')">★</div>
+                        <img class="game-icon" src="${g.icon}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/686/686588.png'">
+                        <div style="font-size:13px; font-weight:bold; color:white;">${g.name}</div>
+                    `;
+                    card.onclick = () => window.open(g.url, '_blank');
+                    grid.appendChild(card);
+                });
+            }
         };
-        window.saveUserPrefs = () => { localStorage.setItem('panicUrl', document.getElementById('prefUrl').value); localStorage.setItem('panicKey', document.getElementById('prefKey').value); alert("SAVED"); };
-        window.doPanic = () => location.replace(localStorage.getItem('panicUrl') || 'https://classroom.google.com');
+
+        // Init
+        fetchGames();
         setInterval(() => { document.getElementById('liveClock').innerText = new Date().toLocaleTimeString(); }, 1000);
     </script>
 </body>
