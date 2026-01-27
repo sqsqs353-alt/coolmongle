@@ -6,78 +6,113 @@
         :root { --bg: #020617; --card: #0f172a; --accent: #3b82f6; --text: #f8fafc; }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; }
         
+        /* AUTHENTICATION SCREEN */
+        #authScreen { position: fixed; inset: 0; background: #000; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .patch-notes { margin-top: 30px; background: #0f172a; padding: 25px; border-radius: 15px; border: 1px solid #1e293b; width: 380px; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .patch-notes h4 { color: var(--accent); margin: 0 0 12px 0; text-align: center; border-bottom: 1px solid #333; padding-bottom: 8px; font-size: 1.1rem; }
+        
         /* PRANK OVERLAYS */
-        #destructScreen { position: fixed; inset: 0; background: white; z-index: 100000; display: none; color: black; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: 5s; }
-        #hackerScreen { position: fixed; inset: 0; background: black; color: #0f0; font-family: monospace; padding: 20px; z-index: 90000; display: none; overflow: hidden; pointer-events: none; }
-        #maintScreen { position: fixed; inset: 0; background: #000; z-index: 80000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; border: 4px solid red; }
+        #destructScreen { position: fixed; inset: 0; background: white; z-index: 200000; display: none; color: black; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: 5s; }
+        #hackerScreen { position: fixed; inset: 0; background: black; color: #0f0; font-family: monospace; padding: 20px; z-index: 150000; display: none; pointer-events: none; }
 
-        /* UI ELEMENTS */
-        .navbar { background: #0f172a; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; position: sticky; top: 0; z-index: 1000; }
+        /* UI LAYOUT */
+        .navbar { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; position: sticky; top: 0; z-index: 1000; }
         .container { padding: 30px; max-width: 1400px; margin: 0 auto; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; margin-bottom: 50px; }
-        
         .game-card { background: var(--card); border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; border: 1px solid #1e293b; transition: 0.3s; position: relative; }
-        .game-card:hover { border-color: var(--accent); transform: translateY(-5px); }
+        .game-card:hover { border-color: var(--accent); transform: translateY(-5px); box-shadow: 0 5px 15px rgba(59, 130, 246, 0.2); }
         .fav-star { position: absolute; top: 10px; right: 10px; cursor: pointer; color: rgba(255,255,255,0.1); font-size: 24px; }
         .fav-star.active { color: #fbbf24; text-shadow: 0 0 10px #fbbf24; }
+        .section-header { color: var(--accent); border-left: 5px solid var(--accent); padding-left: 15px; margin-bottom: 25px; text-transform: uppercase; font-size: 1.3rem; letter-spacing: 1px; }
 
-        .section-header { color: var(--accent); border-left: 5px solid var(--accent); padding-left: 15px; margin-bottom: 25px; text-transform: uppercase; font-size: 1.4rem; letter-spacing: 1px; }
-        
-        /* GAME VIEW */
+        /* INPUTS */
+        .btn { padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; color: white; background: var(--accent); transition: 0.2s; }
+        .btn:hover { opacity: 0.8; }
+        .input-style { padding: 15px; width: 300px; background: #111; color: white; border: 1px solid #333; border-radius: 10px; font-size: 1rem; margin-bottom: 12px; outline: none; }
+        .input-style:focus { border-color: var(--accent); }
+
         #gameView { position: fixed; inset: 0; background: #000; z-index: 30000; display: none; flex-direction: column; }
-        iframe { flex-grow: 1; border: none; background: #fff; }
-        .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; color: white; background: var(--accent); }
+        iframe { flex-grow: 1; border: none; background: #000; }
     </style>
 </head>
 <body>
 
-    <div id="destructScreen">
-        <h1 style="font-size: 3rem;">CRITICAL_SYSTEM_FAILURE</h1>
-        <p>Memory Dump: 100% Complete. System Halted.</p>
+    <div id="authScreen">
+        <h1 style="color:var(--accent); font-size: 5.5rem; margin: 0; letter-spacing: -2px;">MONGLE</h1>
+        <p style="color:#64748b; margin-bottom: 30px; letter-spacing: 4px; font-weight: bold;">ENCRYPTED DATABASE</p>
+        
+        <input type="password" id="passInput" class="input-style" placeholder="Enter Access Key...">
+        <br>
+        <button class="btn" style="width: 335px;" onclick="doLogin()">DECRYPT & ENTER</button>
+
+        <div class="patch-notes">
+            <h4>LATEST UPDATE - JAN 2026</h4>
+            <ul style="padding-left: 20px; color: #94a3b8; line-height: 1.6; font-size: 0.85rem;">
+                <li><b>PRANK ENGINE:</b> Added Hacker & Destruct tools.</li>
+                <li><b>FREDDY LOGIC:</b> Fixed auto-sorting for FNAF files.</li>
+                <li><b>SECURITY:</b> Added mandatory password protection.</li>
+                <li><b>UI:</b> Restored Favorites and Star systems.</li>
+            </ul>
+        </div>
     </div>
+
+    <div id="destructScreen"><h1>FATAL_SYSTEM_ERROR</h1><p>Process Terminated By Admin.</p></div>
     <div id="hackerScreen"></div>
-    <div id="maintScreen">
-        <h1 style="color:red; font-size: 3rem;">OFFLINE</h1>
-        <p>Maintenance Mode Active.</p>
-        <input type="password" id="maintPass" placeholder="Bypass..." style="margin-top:20px; padding:10px;">
-        <button class="btn" onclick="checkMaint()">Unlock</button>
-    </div>
 
-    <div class="navbar">
-        <h1 style="margin:0; font-size: 1.8rem; color: var(--accent);">MONGLE ARCADE</h1>
-        <div style="display:flex; gap:12px;">
-            <input type="text" id="search" placeholder="Search games..." onkeyup="search()" style="padding:10px; background:#000; color:white; border:1px solid #333; border-radius:10px; width: 200px;">
-            <button class="btn" style="background:#ef4444;" onclick="location.replace('https://google.com')">PANIC</button>
-        </div>
-    </div>
-
-    <div class="container">
-        <div id="favSec" style="display:none;">
-            <h2 class="section-header">⭐ Favorites</h2>
-            <div id="favGrid" class="grid"></div>
+    <div id="mainInterface" style="display:none;">
+        <div class="navbar">
+            <div style="display:flex; align-items:center; gap:15px;">
+                <span style="color:#4ade80; font-weight:bold; letter-spacing: 1px;">● MONGLE_SECURE</span>
+                <span style="color:#64748b; font-family: monospace;">VER: 6.2.0</span>
+            </div>
+            <div style="display:flex; gap:12px;">
+                <input type="text" id="search" placeholder="Search archive..." onkeyup="search()" style="padding:10px; background:#000; color:white; border:1px solid #333; border-radius:10px; width: 220px;">
+                <button class="btn" style="background:#ef4444;" onclick="location.replace('https://google.com')">PANIC</button>
+            </div>
         </div>
 
-        <div id="fnafSec" style="display:none;">
-            <h2 class="section-header">🐻 Freddy's Collection</h2>
-            <div id="fnafGrid" class="grid"></div>
+        <div class="container">
+            <div id="favSec" style="display:none;"><h2 class="section-header">⭐ Starred Data</h2><div id="favGrid" class="grid"></div></div>
+            
+            <div id="fnafSec" style="display:none;"><h2 class="section-header">🐻 Freddy's Files</h2><div id="fnafGrid" class="grid"></div></div>
+            
+            <h2 class="section-header">🕹️ Main Archive</h2>
+            <div id="mainGrid" class="grid"></div>
         </div>
-
-        <h2 class="section-header">🕹️ All Games</h2>
-        <div id="mainGrid" class="grid"></div>
     </div>
 
     <div id="gameView">
-        <div style="background:#000; padding:10px; display:flex; justify-content:space-between;">
-            <button class="btn" onclick="exitGame()">← Close Game</button>
-            <button class="btn" style="background:#ef4444;" onclick="location.replace('https://google.com')">PANIC</button>
+        <div style="background:#000; padding:10px; display: flex; justify-content: space-between;">
+            <button class="btn" onclick="exitGame()">← Return to Archive</button>
+            <button class="btn" style="background:red" onclick="location.replace('https://google.com')">PANIC</button>
         </div>
         <iframe id="gameFrame"></iframe>
     </div>
 
     <script>
-        const REPO = { user: "bob154526-hue", name: "Mongle" };
+        const REPO = { user: "bob154526-hue", name: "Mongle", key: "1234" };
 
-        // 1. PRANK/MAINT LOGIC
+        // 1. PASSWORD & AUTH
+        function doLogin() {
+            let p = document.getElementById('passInput').value;
+            if(p === REPO.key) {
+                sessionStorage.setItem('mongleAuth', 'true');
+                checkAuth();
+            } else {
+                alert("ACCESS DENIED: INVALID KEY");
+            }
+        }
+
+        function checkAuth() {
+            if(sessionStorage.getItem('mongleAuth') === 'true') {
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('mainInterface').style.display = 'block';
+                load();
+                applyPranks();
+            }
+        }
+
+        // 2. PRANK ENGINE
         function applyPranks() {
             const prank = localStorage.getItem('mPrank');
             if (prank === 'destruct') {
@@ -87,24 +122,14 @@
                 document.getElementById('hackerScreen').style.display = 'block';
                 setInterval(() => {
                     let p = document.createElement('p');
-                    p.innerText = "> DECRYPTING_FILE_" + Math.random().toString(16).slice(2, 8) + ".dll ... SUCCESS";
+                    p.innerText = "> INJECTING_EXPLOIT_" + Math.random().toString(16).slice(2, 8).toUpperCase() + "... OK";
                     document.getElementById('hackerScreen').appendChild(p);
-                    if(document.getElementById('hackerScreen').childElementCount > 30) document.getElementById('hackerScreen').firstChild.remove();
+                    if(document.getElementById('hackerScreen').childElementCount > 28) document.getElementById('hackerScreen').firstChild.remove();
                 }, 150);
             }
-            if (localStorage.getItem('mMaint') === 'true' && !sessionStorage.getItem('mBypass')) {
-                document.getElementById('maintScreen').style.display = 'flex';
-            }
         }
 
-        function checkMaint() {
-            if(document.getElementById('maintPass').value === '1234') {
-                sessionStorage.setItem('mBypass', 'true');
-                location.reload();
-            }
-        }
-
-        // 2. CORE GAME LOADING
+        // 3. ARCHIVE LOADER
         async function load() {
             const res = await fetch(`https://api.github.com/repos/${REPO.user}/${REPO.name}/contents/`);
             const files = await res.json();
@@ -120,14 +145,12 @@
                 card.innerHTML = `<span class="fav-star ${isFav?'active':''}" onclick="toggleFav(event,'${file.name}')">★</span>
                                   <div onclick="play('${file.download_url}')"><div style="font-size:45px">🎮</div><b style="display:block;margin-top:10px;">${name}</b></div>`;
                 
-                // Sort into Favorites
                 if(isFav) {
                     document.getElementById('favSec').style.display = 'block';
                     document.getElementById('favGrid').appendChild(card.cloneNode(true));
                     document.getElementById('favGrid').lastChild.onclick = () => play(file.download_url);
                 }
 
-                // Sort into Freddy or Main
                 if(name.toLowerCase().includes('fnaf') || name.toLowerCase().includes('freddy')) {
                     document.getElementById('fnafSec').style.display = 'block';
                     document.getElementById('fnafGrid').appendChild(card);
@@ -138,8 +161,7 @@
         }
 
         async function play(url) {
-            const r = await fetch(url);
-            const h = await r.text();
+            const r = await fetch(url); const h = await r.text();
             document.getElementById('gameView').style.display = 'flex';
             document.getElementById('gameFrame').srcdoc = h;
         }
@@ -154,7 +176,7 @@
 
         function search() {
             let q = document.getElementById('search').value.toLowerCase();
-            // SECRET KEY: Type "admin" in search to go to admin panel
+            // Secret admin shortcut
             if (q === 'admin') { location.href = 'wiki.html'; }
             document.querySelectorAll('.game-card').forEach(c => {
                 c.style.display = c.innerText.toLowerCase().includes(q) ? 'block' : 'none';
@@ -162,9 +184,8 @@
         }
 
         function exitGame() { document.getElementById('gameView').style.display = 'none'; document.getElementById('gameFrame').srcdoc = ""; }
-
-        applyPranks();
-        load();
+        
+        checkAuth();
     </script>
 </body>
 </html>
