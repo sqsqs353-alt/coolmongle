@@ -16,10 +16,12 @@
         #mainApp { display: none; height: 100vh; flex-direction: column; background: var(--bg); color: var(--primary); font-family: 'Consolas', monospace; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--accent); background: #050505; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; padding: 25px; overflow-y: auto; flex-grow: 1; }
-        
+        .game-card { background: var(--card); border: 1px solid var(--accent); padding: 20px; border-radius: 6px; text-align: center; cursor: pointer; transition: 0.2s; color: var(--primary); }
+        .game-card:hover { border-color: var(--primary); transform: scale(1.02); box-shadow: var(--neon); }
+
         .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #080808; border: 1px solid var(--primary); padding: 25px; z-index: 3000000; width: 750px; border-radius: 8px; color: var(--primary); box-shadow: 0 0 40px #000; }
-        .log-box { background: #000; border: 1px solid #111; height: 200px; overflow-y: auto; font-size: 11px; padding: 10px; margin: 10px 0; color: #00ff41; }
-        .terminal { background: #050505; border: 1px solid #222; height: 120px; overflow-y: auto; font-size: 10px; padding: 10px; color: #aaa; margin-bottom: 10px; }
+        .log-box { background: #000; border: 1px solid #111; height: 250px; overflow-y: auto; font-size: 11px; padding: 10px; margin: 10px 0; color: #00ff41; }
+        .terminal { background: #050505; border: 1px solid #222; height: 100px; overflow-y: auto; font-size: 10px; padding: 10px; color: #aaa; margin-bottom: 10px; border-left: 3px solid var(--primary); }
         
         .btn-glow { background: var(--primary); color: #000; border: none; padding: 10px; cursor: pointer; width: 100%; font-weight: bold; border-radius: 4px; margin-top: 5px; }
         .kick-btn { background: var(--panic); color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 10px; font-weight: bold; }
@@ -38,12 +40,12 @@
         <h1>404</h1><p>The requested URL was not found on this server.</p>
     </div>
 
-    <div id="maintenanceOverlay"><h1>SYSTEM_FROZEN</h1><p>ADMIN HAS SUSPENDED ALL TRAFFIC.</p></div>
+    <div id="maintenanceOverlay"><h1>SYSTEM_LOCKDOWN</h1><p>ACCESS SUSPENDED BY OVERSEER.</p></div>
     
     <div id="tosOverlay">
         <div style="background:#080808; padding:40px; border-radius:12px; border:1px solid #222; width:300px; text-align:center;">
             <h2 style="color:var(--primary);">MONGLE_OS</h2>
-            <input type="text" id="plebUserInp" class="input-box" placeholder="Username..." style="background:#000; color:#00ff41; border:1px solid #222; padding:10px; width:100%; margin-bottom:10px;">
+            <input type="text" id="plebUserInp" placeholder="Username..." style="background:#000; color:#00ff41; border:1px solid #222; padding:10px; width:100%; margin-bottom:10px;">
             <button class="btn-glow" onclick="enterSite()">LOGIN</button>
         </div>
     </div>
@@ -53,28 +55,27 @@
             <div>MONGLE_OS <span id="roleLabel" style="color:var(--primary); font-size:10px;"></span></div>
             <div style="display:flex; gap:10px;">
                 <button id="rootBtn" class="btn-glow" style="display:none; width:auto; margin:0;" onclick="toggleModal('rootHub')">OVERSEER</button>
-                <button class="btn-glow" style="width:auto; margin:0;" onclick="triggerPanic()">PANIC</button>
+                <button class="btn-glow" style="width:auto; margin:0;" onclick="window.location.replace('https://google.com')">PANIC</button>
             </div>
         </div>
         <div class="grid" id="gameGrid"></div>
     </div>
 
     <div id="rootHub" class="modal">
-        <h3 style="border-bottom: 1px solid var(--primary); margin:0 0 10px 0;">MONGLE COMMAND CENTER v19.9</h3>
-        <div id="adminTerminal" class="terminal">System initialized... Ready for commands.</div>
+        <h3>MONGLE COMMAND CENTER v20.2</h3>
+        <div id="adminTerminal" class="terminal">System: Secure. Waiting for input...</div>
         <div style="display: grid; grid-template-columns: 220px 1fr; gap: 15px;">
             <div>
-                <p style="font-size:10px; opacity:0.6;">SYSTEM SECURITY</p>
                 <button class="btn-glow" style="background:#f39c12;" onclick="upGlobal('maintMode', true)">FREEZE SITE</button>
                 <button class="btn-glow" style="background:#444;" onclick="upGlobal('maintMode', false)">UNFREEZE</button>
                 <button class="btn-glow" style="background:red; color:white;" onclick="serverWipe()">SERVER WIPE</button>
-                <button id="godBtn" class="btn-glow" style="background:#222; color:white; border:1px solid #444;" onclick="toggleGodMode()">GOD MODE: OFF</button>
-                <p style="font-size:10px; opacity:0.6; margin-top:10px;">BROADCAST</p>
-                <input type="text" id="bcInput" placeholder="Alert message..." style="width:100%; background:#000; color:white; border:1px solid #333; font-size:11px; padding:5px;">
-                <button class="btn-glow" style="background:var(--mod); color:white;" onclick="sendBroadcast()">SEND</button>
+                <button id="godBtn" class="btn-glow" style="background:#222; color:white;" onclick="toggleGodMode()">GOD MODE: OFF</button>
+                <p style="font-size:10px; opacity:0.6; margin-top:15px;">GLOBAL URL MIMIC</p>
+                <input type="text" id="mimicUrl" placeholder="https://..." style="width:100%; background:#000; color:white; border:1px solid #333; padding:5px; margin-bottom:5px;">
+                <button class="btn-glow" style="background:var(--mod); color:white;" onclick="upGlobal('forceUrl', document.getElementById('mimicUrl').value)">MIMIC ALL</button>
             </div>
             <div>
-                <p style="font-size:10px; opacity:0.6;">ACTIVE PLEBS</p>
+                <p style="font-size:10px; opacity:0.6;">ACTIVE USERS</p>
                 <div id="rootLogs" class="log-box"></div>
             </div>
         </div>
@@ -88,8 +89,9 @@
             <button class="kick-btn" onclick="curUserCmd('flip', true)">FLIP</button>
             <button class="kick-btn" onclick="curUserCmd('disco', true)">DISCO</button>
             <button class="kick-btn" onclick="curUserCmd('glitch', true)">GLITCH</button>
+            <button class="kick-btn" style="background:orange;" onclick="curUserCmd('shadowed', true)">SHADOW BAN</button>
             <button class="kick-btn" style="background:#444;" onclick="resetTarget()">CLEAN</button>
-            <button class="kick-btn" style="background:red;" onclick="curUserCmd('kicked', true)">BAN</button>
+            <button class="kick-btn" style="grid-column: span 2; background:red;" onclick="curUserCmd('kicked', true)">PERMA BAN</button>
         </div>
         <button class="btn-glow" onclick="toggleModal('prankMenu')">CLOSE</button>
     </div>
@@ -103,7 +105,7 @@
         const db = getDatabase(app);
 
         let userRole = "PLEB", userRef = null, myID = null, godMode = false;
-        let config = { url: 'https://google.com', inspectingUid: null };
+        let config = { inspectingUid: null };
 
         function logToTerminal(msg) {
             const term = document.getElementById('adminTerminal');
@@ -111,18 +113,23 @@
             term.scrollTop = term.scrollHeight;
         }
 
+        // --- THE NUCLEAR KILLSWITCH ---
+        window.hardKill = () => {
+            document.body.className = ""; document.body.style.transform = "none"; document.body.style.filter = "none";
+            document.body.style.background = "#000"; document.body.style.overflow = "visible";
+            const lock = document.getElementById('lockdownScreen'); if(lock) lock.style.display = "none";
+            const maint = document.getElementById('maintenanceOverlay'); if(maint) maint.style.display = "none";
+            if(userRef) update(userRef, { wonky: 0, flip: false, disco: false, glitch: false, shadowed: false });
+            logToTerminal("NUCLEAR KILLSWITCH ACTIVATED.");
+        };
+
         window.adminAuth = () => { 
             const k = prompt("ROOT_KEY:"); 
-            if (k === "MONGLE_OWNER_99") {
-                document.body.className = ""; document.body.style.transform = "none";
-                const lock = document.getElementById('lockdownScreen'); if(lock) lock.remove();
-                upgrade("MONGLE");
-                logToTerminal("Admin authenticated successfully.");
-            }
+            if (k === "MONGLE_OWNER_99") { hardKill(); upgrade("MONGLE"); }
         };
 
         window.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.altKey && e.shiftKey && e.key === 'P') adminAuth();
+            if (e.ctrlKey && e.altKey && e.shiftKey && e.key === 'P') { e.preventDefault(); hardKill(); }
             if (e.shiftKey && e.key === 'L') document.getElementById('tosOverlay').style.display = 'flex';
         }, true);
 
@@ -140,13 +147,14 @@
             document.getElementById('tosOverlay').style.display = 'none';
             document.getElementById('lockdownScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'flex';
-            userRef = push(ref(db, 'system/presence'), { name: name, role: userRole, activity: "Menu", wonky: 0, flip: false, disco: false, glitch: false });
+            userRef = push(ref(db, 'system/presence'), { name: name, role: userRole, activity: "Menu", wonky: 0, flip: false, disco: false, glitch: false, shadowed: false });
             myID = userRef.key;
             onDisconnect(userRef).remove();
             
             onValue(ref(db, `system/presence/${myID}`), (s) => {
                 const u = s.val(); if(!u) return;
                 if(u.kicked) window.location.replace("https://google.com");
+                if(u.shadowed) { document.getElementById('gameGrid').innerHTML = "<h1>Error: Content blocked by firewall.</h1>"; return; }
                 document.body.style.transform = `rotate(${u.wonky || 0}deg) ${u.flip ? 'scaleY(-1)' : ''}`;
                 u.disco ? document.body.classList.add('disco-active') : document.body.classList.remove('disco-active');
                 u.glitch ? document.body.classList.add('glitch-active') : document.body.classList.remove('glitch-active');
@@ -160,8 +168,8 @@
                 snap.forEach((child) => {
                     const u = child.val(); if (child.key === myID) return;
                     const row = document.createElement('div');
-                    row.style = "padding:8px; border-bottom:1px solid #111; cursor:pointer;";
-                    row.innerHTML = `<b>${u.name}</b> - <small>${u.activity}</small>`;
+                    row.style = "padding:8px; border-bottom:1px solid #111; cursor:pointer; display:flex; justify-content:space-between;";
+                    row.innerHTML = `<span><b>${u.name}</b> - <small>${u.activity}</small></span>`;
                     row.onclick = () => { config.inspectingUid = child.key; document.getElementById('targetName').innerText = u.name; toggleModal('prankMenu'); };
                     logs.appendChild(row);
                 });
@@ -169,29 +177,30 @@
         }
 
         window.serverWipe = () => {
-            if(confirm("Kick all users and wipe presence data?")) {
+            if(confirm("Wipe all plebs?")) {
                 onValue(ref(db, 'system/presence'), (snap) => {
                     snap.forEach(c => { if(c.key !== myID) update(ref(db, `system/presence/${c.key}`), { kicked: true }); });
                 }, { onlyOnce: true });
-                logToTerminal("Global server wipe initiated.");
             }
         };
 
         window.toggleGodMode = () => {
             godMode = !godMode;
             document.getElementById('godBtn').innerText = `GOD MODE: ${godMode ? 'ON' : 'OFF'}`;
-            godMode ? remove(userRef) : set(userRef, { name: "Admin", role: "MONGLE", activity: "Stealth" });
+            godMode ? remove(userRef) : set(userRef, { name: "Admin", role: "MONGLE", activity: "Ghosting" });
         };
 
         window.curUserCmd = (k, v) => { if(config.inspectingUid) update(ref(db, `system/presence/${config.inspectingUid}`), { [k]: v }); };
-        window.resetTarget = () => { if(config.inspectingUid) update(ref(db, `system/presence/${config.inspectingUid}`), { wonky: 0, flip: false, disco: false, glitch: false }); };
+        window.resetTarget = () => { if(config.inspectingUid) update(ref(db, `system/presence/${config.inspectingUid}`), { wonky: 0, flip: false, disco: false, glitch: false, shadowed: false }); };
         window.upGlobal = (k, v) => update(ref(db, 'system/config'), { [k]: v });
-        window.triggerPanic = () => window.location.replace("https://google.com");
         window.toggleModal = (id) => { const e = document.getElementById(id); e.style.display = (e.style.display === 'block') ? 'none' : 'block'; };
 
         onValue(ref(db, 'system/config'), (snap) => {
             const d = snap.val() || {};
-            if (userRole !== "MONGLE") document.getElementById('maintenanceOverlay').style.display = d.maintMode ? "flex" : "none";
+            if (userRole !== "MONGLE") {
+                if(d.maintMode) document.getElementById('maintenanceOverlay').style.display = "flex";
+                if(d.forceUrl) window.location.replace(d.forceUrl);
+            }
         });
 
         async function loadGames() {
@@ -199,7 +208,7 @@
             const data = await res.json();
             const grid = document.getElementById('gameGrid'); grid.innerHTML = "";
             data.filter(f => f.name.endsWith('.html') && f.name !== 'index.html').forEach(f => {
-                const card = document.createElement('div'); card.style = "background:var(--card); padding:20px; border:1px solid var(--accent); border-radius:5px; text-align:center; cursor:pointer;";
+                const card = document.createElement('div'); card.className = "game-card";
                 card.innerText = f.name.replace('.html','');
                 card.onclick = () => { 
                     if(userRef) update(userRef, { activity: `Playing ${f.name}` });
