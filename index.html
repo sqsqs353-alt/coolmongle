@@ -8,10 +8,11 @@
         :root { --primary: #00ff41; --bg: #000; --card: #0a0a0a; --accent: #003b00; --panic: #ff3131; --mod: #007bff; --neon: 0 0 10px var(--primary); }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--primary); font-family: 'Consolas', monospace; overflow: hidden; }
         
-        /* THE GATE */
+        /* ENTRY GATE */
         #tosOverlay { position: fixed; inset: 0; background: #000; z-index: 5000000; display: flex; align-items: center; justify-content: center; flex-direction: column; }
         .tos-box { background: #080808; border: 1px solid #111; padding: 40px; text-align: center; border-radius: 12px; width: 350px; }
         
+        /* THE WHITE ERROR TRAP */
         #lockdownScreen { position: fixed; inset: 0; background: #fff; z-index: 1000000; display: none; flex-direction: column; align-items: center; justify-content: center; color: #000; font-family: 'Segoe UI', sans-serif; text-align: center;}
         
         #mainApp { display: none; height: 100vh; flex-direction: column; }
@@ -32,13 +33,13 @@
             <h2 style="color:white; margin:0 0 15px 0; letter-spacing:2px;">MONGLE_OS</h2>
             <input type="text" id="plebUserInp" class="input-box" placeholder="Enter Username...">
             <button class="btn-glow" style="margin-top:10px;" onclick="enterSite()">ACCEPT & START</button>
-            <p style="font-size: 10px; color: #444; margin-top: 20px;">v7.4.0 Secure Connection Established</p>
         </div>
     </div>
 
     <div id="lockdownScreen">
         <h1 style="font-size: 80px; margin: 0;">404</h1>
         <p>The requested URL was not found on this server.</p>
+        <p style="font-size: 11px; color: #ccc; margin-top: 20px;">Apache/2.4.41 (Ubuntu) Server at localhost Port 80</p>
     </div>
 
     <div id="mainApp">
@@ -55,19 +56,13 @@
     </div>
 
     <div id="rootHub" class="modal" style="width:600px;">
-        <h3 style="color:var(--primary); margin:0;">MONGLE_STATS (ROOT)</h3>
+        <h3 style="color:var(--primary); margin:0;">MONGLE_STATS</h3>
         <div id="rootLogs" style="background:#000; height:250px; overflow-y:auto; font-size:11px; padding:10px; border:1px solid #111; margin:10px 0;"></div>
         <button class="btn-glow" onclick="toggleModal('rootHub')">CLOSE</button>
     </div>
 
-    <div id="adminHub" class="modal">
-        <h3 style="color:var(--mod); margin:0;">ENFORCEMENT (ADMIN)</h3>
-        <div id="adminUserList" style="background:#000; height:200px; overflow-y:auto; font-size:11px; padding:10px; border:1px solid #111; margin:10px 0;"></div>
-        <button class="btn-glow" style="background:var(--mod)" onclick="toggleModal('adminHub')">CLOSE</button>
-    </div>
-
     <div id="settingsMenu" class="modal">
-        <h3 style="color:var(--primary); margin:0;">PREFERENCES</h3>
+        <h3 style="color:var(--primary); margin:0;">LOCAL_PREFS</h3>
         <input type="text" id="pUrl" class="input-box" placeholder="Panic URL">
         <input type="text" id="pKey" class="input-box" placeholder="Panic Key" maxlength="1">
         <button class="btn-glow" onclick="saveSettings()">SAVE</button>
@@ -87,11 +82,12 @@
         window.enterSite = () => {
             currentUserName = document.getElementById('plebUserInp').value.trim() || "Guest_" + Math.floor(Math.random()*999);
             document.getElementById('tosOverlay').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'flex';
-            userRole = "PLEB";
+            // SHOW THE TRAP IMMEDIATELY
+            document.getElementById('lockdownScreen').style.display = 'flex';
             setupSession();
         };
 
+        // THE SECRET KEY UNLOCKS THE TRAP
         document.addEventListener('keydown', (e) => {
             if(e.key === config.key) triggerPanic();
             if(e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'l') {
@@ -104,6 +100,9 @@
 
         function upgrade(role) {
             userRole = role;
+            document.getElementById('lockdownScreen').style.display = 'none'; // REMOVE WHITE SCREEN
+            document.getElementById('tosOverlay').style.display = 'none';    // REMOVE GATE
+            document.getElementById('mainApp').style.display = 'flex';       // SHOW GAMES
             document.getElementById('roleLabel').innerText = `[${role}]`;
             document.getElementById('adminBtn').style.display = (role === "ADMIN" || role === "MONGLE") ? 'block' : 'none';
             document.getElementById('rootBtn').style.display = (role === "MONGLE") ? 'block' : 'none';
@@ -123,27 +122,15 @@
 
         function startSync() {
             onValue(ref(db, 'system/logs'), (s) => {
-                const data = s.val() || {};
-                if(userRole === "ADMIN" || userRole === "MONGLE") {
-                    const adminBox = document.getElementById('adminUserList'); adminBox.innerHTML = "";
+                if(userRole === "MONGLE") {
+                    const data = s.val() || {};
                     const rootBox = document.getElementById('rootLogs'); rootBox.innerHTML = "";
                     Object.entries(data).forEach(([key, u]) => {
-                        adminBox.innerHTML += `<div style="padding:5px; border-bottom:1px solid #111;">${u.user} (${u.role})</div>`;
-                        if(userRole === "MONGLE") {
-                            rootBox.innerHTML += `<div style="padding:5px; border-bottom:1px solid #111;"><b>${u.user}</b>: ${u.ip} - ${u.loc}</div>`;
-                        }
+                        rootBox.innerHTML += `<div style="padding:5px; border-bottom:1px solid #111;"><b>${u.user}</b>: ${u.ip} - ${u.loc}</div>`;
                     });
                 }
             });
         }
-
-        window.saveSettings = () => {
-            config.url = document.getElementById('pUrl').value;
-            config.key = document.getElementById('pKey').value;
-            localStorage.setItem('pUrl', config.url);
-            localStorage.setItem('pKey', config.key);
-            toggleModal('settingsMenu');
-        };
 
         async function loadGames() {
             const res = await fetch(`https://api.github.com/repos/bob154526-hue/Mongle/contents/`);
@@ -159,6 +146,13 @@
 
         window.toggleModal = (id) => { const e = document.getElementById(id); e.style.display = (e.style.display === 'block') ? 'none' : 'block'; };
         window.triggerPanic = () => window.location.replace(config.url);
+        window.saveSettings = () => {
+            config.url = document.getElementById('pUrl').value;
+            config.key = document.getElementById('pKey').value;
+            localStorage.setItem('pUrl', config.url);
+            localStorage.setItem('pKey', config.key);
+            toggleModal('settingsMenu');
+        };
     </script>
 </body>
 </html>
