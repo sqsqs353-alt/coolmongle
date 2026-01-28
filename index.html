@@ -5,85 +5,106 @@
     <title>404 Not Found</title>
     <link id="favicon" rel="icon" href="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png">
     <style>
-        :root { --primary: #00ff41; --bg: #000; --card: #0a0a0a; --accent: #003b00; --panic: #ff3131; --pin: #ffcc00; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--primary); font-family: 'Courier New', monospace; overflow: hidden; }
+        :root { --primary: #00ff41; --bg: #000; --card: #0a0a0a; --accent: #003b00; --panic: #ff3131; --pin: #ffcc00; --neon: 0 0 10px var(--primary); }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--primary); font-family: 'Segoe UI', 'Courier New', monospace; overflow: hidden; }
         
-        #lockdownScreen { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #000; font-family: sans-serif; }
-        #globalTicker { background: #050505; color: var(--primary); font-size: 11px; padding: 6px; text-align: center; border-bottom: 1px solid var(--accent); overflow: hidden; white-space: nowrap; height: 30px; box-sizing: border-box; }
-        #globalTicker.urgent { background: #4a0000; color: #fff; animation: pulse 2s infinite; border-bottom: 1px solid red; }
-        .ticker-text { display: inline-block; animation: scroll 20s linear infinite; }
-        @keyframes scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        /* CINEMATIC OVERLAY (Big Text) */
+        #cinematicAlert { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 20000; display: none; align-items: center; justify-content: center; text-align: center; border: 5px solid var(--panic); }
+        #bigText { font-size: 8vw; font-weight: 900; color: white; text-transform: uppercase; text-shadow: 0 0 20px red; animation: shake 0.2s infinite; }
 
+        /* 404 SCREEN */
+        #lockdownScreen { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #000; }
+        
+        /* UI ELEMENTS */
         #mainApp { display: none; height: 100vh; flex-direction: column; }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--accent); height: 65px; box-sizing: border-box; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 20px; overflow-y: auto; flex-grow: 1; }
-        .game-card { background: var(--card); border: 1px solid var(--accent); padding: 15px; border-radius: 4px; text-align: center; cursor: pointer; transition: 0.3s; position: relative; }
-        .game-card:hover { border-color: var(--primary); transform: translateY(-3px); }
-        .stat-badge { position: absolute; top: 2px; right: 5px; font-size: 10px; color: var(--pin); }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--accent); background: #050505; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; padding: 25px; overflow-y: auto; flex-grow: 1; }
+        
+        .game-card { 
+            background: var(--card); border: 1px solid var(--accent); padding: 20px; border-radius: 8px; 
+            text-align: center; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative;
+        }
+        .game-card:hover { border-color: var(--primary); transform: scale(1.05); box-shadow: var(--neon); background: #001a00; }
+        .stat-badge { position: absolute; top: 5px; right: 8px; font-size: 12px; }
 
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0a0a0a; border: 1px solid var(--primary); padding: 20px; z-index: 11000; width: 350px; box-shadow: 0 0 50px #000; }
-        .input-box { background: #000; border: 1px solid var(--accent); color: var(--primary); padding: 10px; width: 100%; box-sizing: border-box; margin-bottom: 8px; font-family: inherit; }
+        /* MODALS */
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0a0a0a; border: 2px solid var(--primary); padding: 30px; z-index: 11000; width: 400px; box-shadow: 0 0 100px #000; border-radius: 12px; }
+        .input-box { background: #000; border: 1px solid var(--accent); color: var(--primary); padding: 12px; width: 100%; box-sizing: border-box; margin-bottom: 12px; font-family: inherit; border-radius: 5px; }
+        .btn-glow { background: var(--primary); color: black; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; }
+        .btn-glow:hover { box-shadow: var(--neon); transform: translateY(-2px); }
+
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 100% { transform: translate(1px, 1px) rotate(0deg); } }
     </style>
 </head>
 <body>
 
+    <div id="cinematicAlert">
+        <div id="bigText">SYSTEM OVERRIDE</div>
+    </div>
+
     <div id="lockdownScreen">
-        <h1 style="font-size:72px; margin:0; color:#555;">404.</h1>
-        <p>The requested URL was not found.</p>
-        <button onclick="location.reload()" style="background:#1a73e8; color:white; border:none; padding:10px 20px; cursor:pointer; border-radius:4px;">Retry</button>
+        <h1 style="font-size:100px; margin:0; color:#eee;">404</h1>
+        <p style="color:#888;">File not found on server.</p>
     </div>
 
     <div id="mainApp">
-        <div id="globalTicker"><div class="ticker-text" id="tickerMsg">...</div></div>
         <div class="top-bar">
-            <div style="font-weight:bold; letter-spacing:2px;">MONGLE ARCADE</div>
-            <div style="display:flex; gap:8px;">
-                <input type="text" id="gameSearch" class="input-box" style="width:140px; margin:0;" placeholder="SEARCH..." onkeyup="filterGames()">
-                <button class="input-box" style="width:auto; margin:0;" onclick="toggleModal('reqModal')">➕</button>
+            <div style="font-weight:900; letter-spacing:4px; font-size: 20px; color:white;">MONGLE<span style="color:var(--primary)">OS</span></div>
+            <div style="display:flex; gap:12px;">
+                <input type="text" id="gameSearch" class="input-box" style="width:200px; margin:0;" placeholder="SEARCH GAMES..." onkeyup="filterGames()">
+                <button class="input-box btn-glow" style="width:auto; margin:0;" onclick="toggleModal('reqModal')">REQ</button>
                 <button class="input-box" style="width:auto; margin:0;" onclick="openSettings()">🔧</button>
-                <button id="adminBtn" class="input-box" style="display:none; width:auto; margin:0; border-color:red;" onclick="toggleModal('adminSettings')">⚙️</button>
-                <button class="input-box" style="background:var(--panic); color:white; border:none;" onclick="triggerPanic()">PANIC</button>
+                <button id="adminBtn" class="input-box" style="display:none; width:auto; margin:0; border:1px solid red; color:red;" onclick="toggleModal('adminSettings')">ROOT</button>
+                <button class="input-box" style="background:var(--panic); color:white; border:none; width:80px;" onclick="triggerPanic()">PANIC</button>
             </div>
         </div>
         <div class="grid" id="gameGrid"></div>
     </div>
 
     <div id="adminSettings" class="modal">
-        <h3 style="color:red; margin:0 0 10px 0;">ROOT_CONSOLE</h3>
-        <input type="text" id="msgInp" class="input-box" placeholder="Set Ticker Text...">
-        <div style="display:flex; gap:5px; margin-bottom:10px;">
-            <button class="input-box" onclick="updateTicker(false)">NORM</button>
-            <button class="input-box" onclick="updateTicker(true)" style="background:red; color:white;">URGENT</button>
+        <h2 style="color:red; margin:0 0 20px 0; text-align:center;">ROOT_COMMAND</h2>
+        <p style="font-size:10px;">CINEMATIC ALERT (BIG TEXT):</p>
+        <input type="text" id="bigMsgInp" class="input-box" placeholder="Enter bold message...">
+        <div style="display:flex; gap:5px;">
+            <button class="input-box btn-glow" onclick="setBigText(true)">ON</button>
+            <button class="input-box" onclick="setBigText(false)">OFF</button>
         </div>
-        <div style="font-size:10px; color:var(--pin);">USER REQUESTS:</div>
-        <div id="requestList" style="max-height:100px; overflow-y:auto; border:1px solid #222; margin:5px 0; font-size:10px; padding:5px; background:#000;"></div>
-        <button class="input-box" onclick="clearRequests()" style="font-size:9px; background:#200;">WIPE ALL REQUESTS</button>
-        <button class="input-box" onclick="togglePrank()" style="background:purple; color:white;">SEND FAKE CRASH</button>
-        <button class="input-box" onclick="toggleModal('adminSettings')">CLOSE</button>
+        
+        <p style="font-size:10px;">PRANKS:</p>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+            <button class="input-box" style="background:#400; color:white;" onclick="triggerRemote('fakeCrash')">CRASH</button>
+            <button class="input-box" style="background:#404; color:white;" onclick="triggerRemote('ghost')">GHOST MOAM</button>
+        </div>
+
+        <div style="font-size:10px; color:var(--pin); margin-top:10px;">LOGGED REQUESTS:</div>
+        <div id="requestList" style="max-height:80px; overflow-y:auto; background:#111; padding:5px; font-size:11px; margin-bottom:10px;"></div>
+        <button class="input-box" onclick="clearRequests()" style="font-size:10px;">CLEAR LOGS</button>
+        <button class="input-box" onclick="toggleModal('adminSettings')">EXIT ROOT</button>
     </div>
 
     <div id="plebSettings" class="modal">
-        <h3>SETTINGS</h3>
-        <p style="font-size:10px;">PANIC URL:</p>
-        <input type="text" id="panicUrlInput" class="input-box" placeholder="https://classroom.google.com">
-        <button class="input-box" onclick="saveSettings()" style="border-color:var(--primary);">SAVE CHANGES</button>
-        <button class="input-box" onclick="toggleModal('plebSettings')">CLOSE</button>
+        <h2 style="margin-top:0;">SYSTEM PREFS</h2>
+        <div style="background:#111; padding:15px; border-radius:8px; border-left:4px solid var(--primary);">
+            <p style="margin:0 0 10px 0; font-size:12px;">REDIRECT STEALTH URL:</p>
+            <input type="text" id="panicUrlInput" class="input-box" placeholder="e.g. https://google.com">
+            <button class="input-box btn-glow" onclick="saveSettings()">UPDATE PANIC KEY</button>
+        </div>
+        <button class="input-box" onclick="toggleModal('plebSettings')" style="margin-top:15px;">CLOSE</button>
     </div>
 
     <div id="reqModal" class="modal">
-        <h3>REQUEST GAME</h3>
-        <input type="text" id="gameReqInput" class="input-box" placeholder="Game Name...">
-        <button class="input-box" onclick="submitRequest('gameReqInput')">SUBMIT</button>
-        <button class="input-box" onclick="toggleModal('reqModal')">CLOSE</button>
+        <h3>NEW REQUEST</h3>
+        <input type="text" id="gameReqInput" class="input-box" placeholder="What game should I add?">
+        <button class="input-box btn-glow" onclick="submitRequest('gameReqInput')">SEND REQUEST</button>
+        <button class="input-box" onclick="toggleModal('reqModal')">CANCEL</button>
     </div>
 
     <div id="authLayer" style="display:none; position:fixed; inset:0; background:#000; z-index:10000; align-items:center; justify-content:center; flex-direction:column;">
-        <h2 style="color:var(--primary); letter-spacing:5px;">MONGLE_OS</h2>
-        <div style="border:1px solid var(--accent); padding:30px; text-align:center;">
-            <input type="text" id="username" class="input-box" placeholder="USERNAME">
-            <button class="input-box" onclick="handleLogin()">ENTER</button>
-            <button onclick="promptRoot()" style="background:none; border:none; color:#111; cursor:pointer; margin-top:15px; display:block; width:100%;">[ROOT]</button>
+        <h1 style="letter-spacing:15px; color:white;">MONGLE</h1>
+        <div style="width:300px; text-align:center;">
+            <input type="text" id="username" class="input-box" placeholder="ACCESS_ID">
+            <button class="input-box btn-glow" onclick="handleLogin()">BYPASS</button>
+            <button onclick="promptRoot()" style="background:none; border:none; color:#151515; cursor:pointer; margin-top:20px;">[ADMIN_LOGIN]</button>
         </div>
     </div>
 
@@ -100,66 +121,79 @@
 
         const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-        // PANIC & SETTINGS FIX
+        // PANIC & SETTINGS
         window.openSettings = () => {
             document.getElementById('panicUrlInput').value = localStorage.getItem('monglePanicUrl') || "https://classroom.google.com";
             toggleModal('plebSettings');
         };
         window.saveSettings = () => {
             localStorage.setItem('monglePanicUrl', document.getElementById('panicUrlInput').value);
-            alert("Panic Key Updated!");
+            alert("Panic Protocol Updated.");
             toggleModal('plebSettings');
         };
         window.triggerPanic = () => window.location.replace(localStorage.getItem('monglePanicUrl') || "https://classroom.google.com");
 
-        // GLOBAL SYNC LISTENERS
-        onValue(ref(db, 'system/ticker'), (s) => {
-            const d = s.val() || { text: "SYSTEM ONLINE", urgent: false };
-            document.getElementById('tickerMsg').innerText = d.text;
-            document.getElementById('globalTicker').className = d.urgent ? 'urgent' : '';
+        // BIG TEXT & PRANK SYNC
+        onValue(ref(db, 'system/bigText'), (s) => {
+            const d = s.val() || { active: false, text: "" };
+            const el = document.getElementById('cinematicAlert');
+            if(d.active) {
+                document.getElementById('bigText').innerText = d.text;
+                el.style.display = 'flex';
+            } else { el.style.display = 'none'; }
         });
-        
+
+        onValue(ref(db, 'system/remoteTrigger'), (s) => {
+            const t = s.val();
+            if(!t || window.isRoot) return;
+            if(t === 'fakeCrash') {
+                document.body.innerHTML = `<div style="background:blue; color:white; padding:50px; height:100vh; font-family:monospace;">:( PC ERROR</div>`;
+                setTimeout(() => location.reload(), 3000);
+            }
+            if(t === 'ghost') {
+                document.body.style.filter = "invert(1) grayscale(1)";
+                setTimeout(() => document.body.style.filter = "none", 2000);
+            }
+        });
+
+        window.setBigText = (active) => set(ref(db, 'system/bigText'), { active, text: document.getElementById('bigMsgInp').value });
+        window.triggerRemote = (type) => {
+            set(ref(db, 'system/remoteTrigger'), type);
+            setTimeout(() => set(ref(db, 'system/remoteTrigger'), null), 1000);
+        };
+
+        // REQUESTS
         onValue(ref(db, 'system/requests'), (s) => {
             const list = document.getElementById('requestList');
             list.innerHTML = "";
-            if(s.val()) Object.values(s.val()).forEach(r => list.innerHTML += `<div style="padding:4px; border-bottom:1px solid #111;">• ${r.name}</div>`);
-            else list.innerHTML = "<i style='color:#444'>No pending requests</i>";
+            if(s.val()) Object.values(s.val()).forEach(r => list.innerHTML += `<div>• ${r.name}</div>`);
         });
 
-        onValue(ref(db, 'system/stats'), (s) => { gameStats = s.val() || {}; renderGrid(masterGames); });
-        onValue(ref(db, 'system/prank'), (s) => { if(s.val() && !window.isRoot) triggerFakeCrash(); });
-
-        // GAME REQUESTS
         window.submitRequest = (id) => {
             const name = document.getElementById(id).value.trim();
             if(!name) return;
-            if(masterGames.some(g => norm(g.name).includes(norm(name)))) {
-                alert("This game is already in the library!");
-            } else {
-                push(ref(db, 'system/requests'), { name, date: new Date().toLocaleTimeString() });
-                alert("Request Sent!");
-            }
+            if(masterGames.some(g => norm(g.name).includes(norm(name)))) { alert("Game exists!"); }
+            else { push(ref(db, 'system/requests'), { name }); alert("Sent!"); }
             document.getElementById(id).value = "";
-            if(id === 'gameReqInput') toggleModal('reqModal');
+            toggleModal('reqModal');
         };
 
-        // GAMES LIST
+        // CORE ENGINE
         async function loadGames() {
             const res = await fetch(`https://api.github.com/repos/bob154526-hue/Mongle/contents/`);
             const data = await res.json();
             masterGames = data.filter(f => f.name.endsWith('.html') && f.name !== 'index.html');
-            renderGrid(masterGames);
+            onValue(ref(db, 'system/stats'), (s) => { gameStats = s.val() || {}; renderGrid(masterGames); });
         }
 
         function renderGrid(list) {
             const grid = document.getElementById('gameGrid');
             grid.innerHTML = "";
             list.forEach(f => {
-                const cleanName = f.name.replace('.html','').replace(/[-_]/g, ' ');
                 const clicks = gameStats[norm(f.name)] || 0;
                 const card = document.createElement('div');
                 card.className = 'game-card';
-                card.innerHTML = `${cleanName} ${clicks > 10 ? '<span class="stat-badge">🔥</span>' : ''}`;
+                card.innerHTML = `${f.name.replace('.html','').replace(/[-_]/g, ' ')} ${clicks > 15 ? '<span class="stat-badge">🔥</span>' : ''}`;
                 card.onclick = () => {
                     runTransaction(ref(db, `system/stats/${norm(f.name)}`), (c) => (c || 0) + 1);
                     window.open(`https://raw.githack.com/bob154526-hue/Mongle/main/${f.name}`, '_blank');
@@ -168,10 +202,10 @@
             });
         }
 
-        // AUTH & CORE
+        // ACCESS
         document.addEventListener('keydown', (e) => { if(e.shiftKey && e.key === 'L') enter(); });
         function enter() { 
-            const p = prompt("ACCESS KEY:");
+            const p = prompt("ACCESS_ID:");
             if(p === "mongle77" || p === "MONGLE_OWNER_99") {
                 document.getElementById('lockdownScreen').style.display = 'none';
                 document.getElementById('authLayer').style.display = 'flex';
@@ -185,15 +219,9 @@
             loadGames();
         };
         window.promptRoot = () => { if(prompt("ROOT:") === "MONGLE_OWNER_99") { window.isRoot = true; handleLogin(); } };
-        window.updateTicker = (u) => set(ref(db, 'system/ticker'), { text: document.getElementById('msgInp').value, urgent: u });
         window.clearRequests = () => remove(ref(db, 'system/requests'));
-        window.togglePrank = () => { set(ref(db, 'system/prank'), true); setTimeout(() => set(ref(db, 'system/prank'), false), 5000); };
         window.toggleModal = (id) => { const e = document.getElementById(id); e.style.display = e.style.display === 'block' ? 'none' : 'block'; };
         window.filterGames = () => renderGrid(masterGames.filter(g => g.name.toLowerCase().includes(document.getElementById('gameSearch').value.toLowerCase())));
-        function triggerFakeCrash() {
-            document.body.innerHTML = `<div style="background:blue; color:white; font-family:monospace; padding:50px; height:100vh;">:( System Error. Restarting...</div>`;
-            setTimeout(() => location.reload(), 3000);
-        }
     </script>
 </body>
 </html>
