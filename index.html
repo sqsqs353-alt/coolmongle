@@ -7,27 +7,18 @@
     <style>
         :root { --primary: #00ff41; --bg: #000; --card: #0a0a0a; --accent: #003b00; --panic: #ff3131; --mod: #007bff; --neon: 0 0 10px var(--primary); --chat-red: #ff3131; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #fff; color: #000; font-family: 'Segoe UI', sans-serif; overflow: hidden; transition: background 0.3s, transform 0.3s; }
-        
-        #ghostTrigger { position: fixed; top: 0; left: 0; width: 25px; height: 25px; background: transparent; z-index: 2147483647; cursor: crosshair; }
+        #ghostTrigger { position: fixed; top: 0; left: 0; width: 30px; height: 30px; background: transparent; z-index: 2147483647; cursor: crosshair; }
         #lockdownScreen { position: fixed; inset: 0; background: #fff; z-index: 1000000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        #maintenanceOverlay { position: fixed; inset: 0; background: #000; z-index: 5000000; display: none; flex-direction: column; align-items: center; justify-content: center; color: var(--primary); font-family: 'Consolas', monospace; }
-        #adminAlertOverlay { position: fixed; inset: 0; background: rgba(255,0,0,0.95); z-index: 10000000; display: none; align-items: center; justify-content: center; color: white; font-size: 3rem; font-weight: 900; text-align: center; padding: 50px; text-transform: uppercase; border: 15px solid white; box-sizing: border-box; pointer-events: none; }
-
+        #adminAlertOverlay { position: fixed; inset: 0; background: rgba(255,0,0,0.95); z-index: 10000000; display: none; align-items: center; justify-content: center; color: white; font-size: 3rem; font-weight: 900; text-align: center; border: 15px solid white; pointer-events: none; }
         #mainApp { display: none; height: 100vh; flex-direction: column; background: var(--bg); color: var(--primary); font-family: 'Consolas', monospace; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--accent); background: #050505; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; padding: 25px; overflow-y: auto; flex-grow: 1; }
         .game-card { background: var(--card); border: 1px solid var(--accent); padding: 20px; border-radius: 6px; text-align: center; cursor: pointer; transition: 0.2s; color: var(--primary); }
         .game-card:hover { border-color: var(--primary); transform: scale(1.02); box-shadow: var(--neon); }
-
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #080808; border: 1px solid var(--primary); padding: 25px; z-index: 3000000; border-radius: 8px; color: var(--primary); box-shadow: 0 0 30px rgba(0,0,0,1); }
-        .log-box { background: #000; border: 1px solid #111; height: 180px; overflow-y: auto; font-size: 11px; padding: 10px; margin: 10px 0; }
-        
-        #chatBox { flex-grow: 1; overflow-y: auto; padding: 10px; font-size: 13px; color: var(--chat-red); text-shadow: 0 0 8px var(--chat-red); font-weight: bold; }
-        .chat-msg { margin-bottom: 8px; }
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #080808; border: 1px solid var(--primary); padding: 25px; z-index: 3000000; border-radius: 8px; color: var(--primary); box-shadow: 0 0 30px #000; }
         .btn-glow { background: var(--primary); color: #000; border: none; padding: 10px; cursor: pointer; width: 100%; font-weight: bold; border-radius: 4px; margin-top: 5px; }
-        .input-box { background: #000; border: 1px solid var(--accent); color: var(--primary); padding: 10px; width: 100%; box-sizing: border-box; margin-bottom: 5px; border-radius: 4px; outline: none; }
+        .input-box { background: #000; border: 1px solid var(--accent); color: var(--primary); padding: 10px; width: 100%; box-sizing: border-box; margin-bottom: 5px; outline: none; }
         .kick-btn { background: var(--panic); color: white; border: none; padding: 5px; border-radius: 3px; cursor: pointer; font-size: 10px; font-weight: bold; }
-        
         @keyframes disco { 0% { background: red; } 33% { background: blue; } 66% { background: green; } 100% { background: red; } }
         .disco-active { animation: disco 0.2s infinite !important; }
         @keyframes shake { 0% { transform: translate(1px, 1px); } 10% { transform: translate(-1px, -2px); } 20% { transform: translate(-3px, 0px); } 100% { transform: translate(1px, -2px); } }
@@ -39,9 +30,7 @@
     <div id="adminAlertOverlay"></div>
     <div id="ghostTrigger" onclick="adminAuth()"></div>
 
-    <div id="lockdownScreen">
-        <h1>404</h1><p>The requested URL was not found on this server.</p>
-    </div>
+    <div id="lockdownScreen"><h1>404</h1><p>The requested URL was not found on this server.</p></div>
 
     <div id="tosOverlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 2000000; display: none; align-items: center; justify-content: center;">
         <div style="background:#080808; padding:40px; border-radius:12px; border:1px solid #222; width:300px; text-align:center;">
@@ -64,7 +53,7 @@
     </div>
 
     <div id="rootHub" class="modal" style="width: 90vw; max-width: 1100px;">
-        <h3 style="border-bottom:1px solid var(--primary); padding-bottom:10px; margin:0;">OVERSEER v19.0</h3>
+        <h3 style="border-bottom:1px solid var(--primary); padding-bottom:10px; margin:0;">OVERSEER v19.1</h3>
         <div style="display: grid; grid-template-columns: 220px 1fr 300px; gap: 15px; height: 500px; margin-top:10px;">
             <div>
                 <p style="font-size:10px;">GLOBAL COMMANDS</p>
@@ -76,7 +65,7 @@
                 <input type="text" id="fsMsgInp" class="input-box" placeholder="Message...">
                 <button class="btn-glow" style="background:var(--mod); color:white;" onclick="upGlobal('fsAlert', document.getElementById('fsMsgInp').value)">SEND FS ALERT</button>
             </div>
-            <div id="adminTerminal"><div id="terminalBody" class="log-box" style="height:450px;"></div></div>
+            <div><div id="terminalBody" style="background:#000; border:1px solid #111; height:450px; overflow-y:auto; font-size:11px; padding:10px;"></div></div>
             <div style="overflow-y:auto;">
                 <p style="font-size:10px;">ACTIVE PLEBS (<span id="pCount">0</span>)</p>
                 <div id="rootLogs"></div>
@@ -95,13 +84,13 @@
             <button class="kick-btn" onclick="curUserCmd('disco', true)">DISCO</button>
             <button class="kick-btn" onclick="curUserCmd('glitch', true)">GLITCH</button>
             <button class="kick-btn" style="background:red;" onclick="curUserCmd('kicked', true)">PERMA BAN</button>
-            <button class="kick-btn" style="grid-column: span 2; background:#444;" onclick="resetTarget()">CLEAR ALL PRANKS</button>
+            <button class="kick-btn" style="grid-column: span 2; background:#444;" onclick="resetTarget()">CLEAR PRANKS</button>
         </div>
         <button class="btn-glow" onclick="toggleModal('inspectorModal')">CLOSE</button>
     </div>
 
     <div id="chatWidget" class="modal" style="width:300px; height:450px; display:none; flex-direction:column;">
-        <div id="chatBox"></div>
+        <div id="chatBox" style="flex-grow:1; overflow-y:auto; padding:10px; color:var(--chat-red); font-weight:bold; text-shadow: 0 0 5px red;"></div>
         <input type="text" id="chatInput" class="input-box" placeholder="Type..." onkeydown="if(event.key==='Enter')sendChatMessage()">
     </div>
 
@@ -113,27 +102,26 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let userRole = "PLEB", userRef = null, myID = null, userName = "Guest", isMuted = false, inspectingUid = null, godMode = false;
+        let userRole = "PLEB", userRef = null, myID = null, userName = "Guest", isMuted = false, godMode = false;
         let config = { url: localStorage.getItem('pUrl') || 'https://google.com', key: localStorage.getItem('pKey') || 'q' };
+
+        // EMERGENCY OVERRIDE
+        window.adminAuth = () => { 
+            const entry = prompt("ROOT_KEY:");
+            if (entry === "MONGLE_OWNER_99") {
+                document.body.classList.remove('disco-active', 'glitch-active');
+                document.body.style.transform = 'none';
+                if(userRef) update(userRef, { wonky:0, flip:false, disco:false, glitch:false, muted:false });
+                if(userRole !== "MONGLE") upgrade("MONGLE");
+                else alert("EMERGENCY OVERRIDE: PRANKS CLEARED");
+            }
+        };
 
         window.addEventListener('keydown', (e) => {
             if (e.target.tagName === 'INPUT') return;
             if (e.key.toLowerCase() === config.key.toLowerCase()) triggerPanic();
             if (e.shiftKey && e.key === 'L') document.getElementById('tosOverlay').style.display = 'flex';
         });
-
-        // ROOT AUTH & OVERRIDE
-        window.adminAuth = () => { 
-            if (prompt("ROOT_KEY:") === "MONGLE_OWNER_99") {
-                // If already admin, this acts as a prank reset
-                if(userRole === "MONGLE") {
-                    update(userRef, { wonky: 0, flip: false, disco: false, glitch: false, muted: false });
-                    alert("OVERRIDE: All pranks cleared on self.");
-                } else {
-                    upgrade("MONGLE");
-                }
-            }
-        };
 
         function upgrade(role) {
             userRole = role; document.getElementById('lockdownScreen').style.display = 'none';
@@ -149,17 +137,16 @@
             document.getElementById('tosOverlay').style.display = 'none';
             document.getElementById('lockdownScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'flex';
-            userRef = push(ref(db, 'system/presence'), { name: userName, role: userRole, activity: "Browsing", wonky: 0, flip: false, disco: false, muted: false });
+            userRef = push(ref(db, 'system/presence'), { name: userName, role: userRole, activity: "Browsing", wonky: 0, flip: false, disco: false, glitch: false, muted: false });
             myID = userRef.key;
             onDisconnect(userRef).remove();
-            
             onValue(ref(db, `system/presence/${myID}`), (s) => {
                 if(!s.exists()) return;
                 const u = s.val();
                 if(u.kicked) window.location.replace("https://google.com");
                 document.body.style.transform = `rotate(${u.wonky || 0}deg) ${u.flip ? 'scaleY(-1)' : ''}`;
-                if(u.disco) document.body.classList.add('disco-active'); else document.body.classList.remove('disco-active');
-                if(u.glitch) document.body.classList.add('glitch-active'); else document.body.classList.remove('glitch-active');
+                u.disco ? document.body.classList.add('disco-active') : document.body.classList.remove('disco-active');
+                u.glitch ? document.body.classList.add('glitch-active') : document.body.classList.remove('glitch-active');
                 isMuted = u.muted;
             });
             loadGames();
@@ -168,8 +155,7 @@
         window.toggleGodMode = () => {
             godMode = !godMode;
             document.getElementById('godBtn').innerText = `GOD MODE: ${godMode ? 'ON' : 'OFF'}`;
-            if(godMode) onDisconnect(userRef).cancel(); else onDisconnect(userRef).remove();
-            if(godMode) remove(userRef); else set(userRef, { name: userName, role: userRole, activity: "Browsing" });
+            godMode ? remove(userRef) : set(userRef, { name: userName, role: userRole, activity: "Browsing" });
         };
 
         function startOverseer() {
@@ -179,14 +165,9 @@
                 snap.forEach(child => {
                     const u = child.val();
                     const row = document.createElement('div');
-                    row.className = 'user-row';
-                    row.style = "padding:8px; border-bottom:1px solid #111; cursor:pointer;";
+                    row.style = "padding:8px; border-bottom:1px solid #111; cursor:pointer; font-size:11px;";
                     row.innerHTML = `<b>${u.name}</b> <small>[${u.activity}]</small>`;
-                    row.onclick = () => {
-                        inspectingUid = child.key;
-                        document.getElementById('inspectorData').innerHTML = `NAME: ${u.name}<br>RANK: ${u.role}<br>MUTE: ${u.muted}`;
-                        toggleModal('inspectorModal');
-                    };
+                    row.onclick = () => { window.inspectingUid = child.key; document.getElementById('inspectorData').innerHTML = `NAME: ${u.name}<br>RANK: ${u.role}<br>MUTE: ${u.muted}`; toggleModal('inspectorModal'); };
                     logs.appendChild(row);
                 });
             });
@@ -195,22 +176,19 @@
         window.sendChatMessage = () => {
             const inp = document.getElementById('chatInput');
             if(!inp.value.trim()) return;
-            if(isMuted === 'shadow') {
-                document.getElementById('chatBox').innerHTML += `<div class="chat-msg" style="opacity:0.5"><b>${userName}</b>: ${inp.value}</div>`;
-            } else if(!isMuted) {
-                push(ref(db, 'system/chat'), { user: userName, text: inp.value });
-            }
+            if(isMuted === 'shadow') document.getElementById('chatBox').innerHTML += `<div style="opacity:0.5"><b>${userName}</b>: ${inp.value}</div>`;
+            else if(!isMuted) push(ref(db, 'system/chat'), { user: userName, text: inp.value });
             inp.value = "";
         };
 
         onValue(query(ref(db, 'system/chat'), limitToLast(30)), (snap) => {
             const box = document.getElementById('chatBox'); box.innerHTML = "";
-            snap.forEach(c => { box.innerHTML += `<div class="chat-msg"><b>${c.val().user}</b>: ${c.val().text}</div>`; });
+            snap.forEach(c => { box.innerHTML += `<div><b>${c.val().user}</b>: ${c.val().text}</div>`; });
             box.scrollTop = box.scrollHeight;
         });
 
-        window.curUserCmd = (k, v) => { if(inspectingUid) update(ref(db, `system/presence/${inspectingUid}`), { [k]: v }); };
-        window.resetTarget = () => { if(inspectingUid) update(ref(db, `system/presence/${inspectingUid}`), { wonky: 0, flip: false, disco: false, glitch: false, muted: false }); };
+        window.curUserCmd = (k, v) => { if(window.inspectingUid) update(ref(db, `system/presence/${window.inspectingUid}`), { [k]: v }); };
+        window.resetTarget = () => { if(window.inspectingUid) update(ref(db, `system/presence/${window.inspectingUid}`), { wonky: 0, flip: false, disco: false, glitch: false, muted: false }); };
         window.upGlobal = (k, v) => update(ref(db, 'system/config'), { [k]: v });
         window.purgeChat = () => { if(confirm("Purge?")) remove(ref(db, 'system/chat')); };
         window.triggerPanic = () => window.location.replace(config.url);
@@ -225,7 +203,7 @@
                 card.innerText = f.name.replace('.html','').replace(/[-_]/g, ' ');
                 card.onclick = () => { 
                     const url = `https://raw.githack.com/bob154526-hue/Mongle/main/${f.name}`;
-                    if(!godMode) update(userRef, { activity: `Playing ${f.name}` });
+                    if(!godMode && userRef) update(userRef, { activity: `Playing ${f.name}` });
                     window.open(url); 
                 };
                 grid.appendChild(card);
