@@ -6,7 +6,7 @@
     <link id="favicon" rel="icon" href="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png">
     <style>
         :root { --primary: #00ff41; --bg: #000; --card: #0a0a0a; --accent: #003b00; --panic: #ff3131; --mod: #007bff; --neon: 0 0 10px var(--primary); }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #fff; color: #000; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #fff; color: #000; font-family: 'Segoe UI', sans-serif; overflow: hidden; transition: background 0.5s; }
         
         /* Secret Admin Entry */
         #ghostTrigger { position: fixed; top: 0; left: 0; width: 25px; height: 25px; background: transparent; z-index: 2147483647; cursor: crosshair; }
@@ -25,13 +25,20 @@
         .game-card:hover { border-color: var(--primary); transform: scale(1.02); box-shadow: var(--neon); }
 
         /* Modals & Logs */
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #080808; border: 1px solid var(--primary); padding: 25px; z-index: 3000000; width: 600px; border-radius: 8px; color: var(--primary); }
-        .log-box { background: #000; border: 1px solid #111; height: 180px; overflow-y: auto; font-size: 11px; padding: 10px; margin: 10px 0; }
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #080808; border: 1px solid var(--primary); padding: 25px; z-index: 3000000; border-radius: 8px; color: var(--primary); box-shadow: 0 0 30px rgba(0,0,0,1); }
+        .log-box { background: #000; border: 1px solid #111; height: 180px; overflow-y: auto; font-size: 11px; padding: 10px; margin: 10px 0; scroll-behavior: smooth; }
         .user-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #111; padding: 8px 5px; }
         .kick-btn { background: var(--panic); color: white; border: none; font-size: 9px; padding: 3px 8px; border-radius: 3px; cursor: pointer; }
         
+        /* Chat UI */
+        #chatWidget { position: fixed; bottom: 20px; right: 20px; width: 300px; height: 400px; background: #080808; border: 1px solid var(--accent); display: none; flex-direction: column; border-radius: 8px; z-index: 1000; }
+        #chatBox { flex-grow: 1; overflow-y: auto; padding: 10px; font-size: 12px; }
+        .chat-msg { margin-bottom: 8px; word-wrap: break-word; }
+        .chat-msg b { color: var(--mod); }
+
         /* Forms */
-        .btn-glow { background: var(--primary); color: #000; border: none; padding: 12px; cursor: pointer; width: 100%; font-weight: bold; border-radius: 4px; margin-top: 5px; }
+        .btn-glow { background: var(--primary); color: #000; border: none; padding: 12px; cursor: pointer; width: 100%; font-weight: bold; border-radius: 4px; margin-top: 5px; transition: 0.3s; }
+        .btn-glow:hover { filter: brightness(1.2); box-shadow: var(--neon); }
         .input-box { background: #000; border: 1px solid var(--accent); color: var(--primary); padding: 12px; width: 100%; box-sizing: border-box; margin-bottom: 10px; border-radius: 4px; outline: none; }
         .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #0c0c0c; margin-bottom: 5px; border-radius: 4px; border: 1px solid #1a1a1a; font-size: 11px; }
         
@@ -57,7 +64,7 @@
     <div id="maintenanceOverlay"><h1>SYSTEM_MAINTENANCE</h1><p>CORE MODULES UPDATING.</p></div>
     <div id="tosOverlay">
         <div style="background:#080808; padding:40px; border-radius:12px; border:1px solid #222; width:300px; text-align:center;">
-            <h2 style="color:var(--primary);">MONGLE_OS</h2>
+            <h2 id="osTitle" style="color:var(--primary);">MONGLE_OS</h2>
             <input type="text" id="plebUserInp" class="input-box" placeholder="Username...">
             <button class="btn-glow" onclick="enterSite()">LOGIN</button>
         </div>
@@ -65,9 +72,10 @@
 
     <div id="mainApp">
         <div class="top-bar">
-            <div>MONGLE_OS <span id="roleLabel" style="color:var(--primary); font-size:10px;"></span></div>
+            <div><span id="navTitle">MONGLE_OS</span> <span id="roleLabel" style="color:var(--primary); font-size:10px;"></span></div>
             <div style="display:flex; gap:10px;">
                 <button id="rootBtn" class="input-box" style="display:none; width:auto; border-color:var(--primary); margin:0;" onclick="toggleModal('rootHub')">CORE_COMMAND</button>
+                <button class="input-box" style="width:auto; margin:0;" onclick="toggleModal('chatWidget')">CHAT</button>
                 <button class="input-box" style="width:auto; margin:0;" onclick="toggleModal('settingsMenu')">SETTINGS</button>
                 <button class="input-box" style="background:var(--panic); color:white; border:none; width:auto; margin:0;" onclick="triggerPanic()">PANIC</button>
             </div>
@@ -75,25 +83,59 @@
         <div class="grid" id="gameGrid"></div>
     </div>
 
-    <div id="rootHub" class="modal">
-        <h3 style="border-bottom: 1px solid var(--primary); margin:0 0 10px 0;">OVERSEER_v15.1</h3>
-        <div style="display: grid; grid-template-columns: 200px 1fr; gap: 15px;">
-            <div>
-                <p style="font-size:10px; opacity:0.6;">SYSTEM CONTROLS:</p>
-                <div class="switch-row"><span>Hint</span><label class="switch"><input type="checkbox" id="tHint" onchange="upGlobal('showHint', this.checked)"><span class="slider"></span></label></div>
-                <div class="switch-row"><span>Maint.</span><label class="switch"><input type="checkbox" id="tMaint" onchange="upGlobal('maintMode', this.checked)"><span class="slider"></span></label></div>
-                <button class="btn-glow" style="background:var(--panic); color:white; margin-top:5px; padding:8px;" onclick="triggerGlobalRestart()">FORCE RESTART</button>
+    <div id="chatWidget">
+        <div style="padding:10px; border-bottom:1px solid var(--accent); display:flex; justify-content:space-between; font-size:12px;">
+            <span>GLOBAL_CHAT</span>
+            <span onclick="toggleModal('chatWidget')" style="cursor:pointer; color:var(--panic)">[X]</span>
+        </div>
+        <div id="chatBox"></div>
+        <div style="padding:10px;">
+            <input type="text" id="chatInput" class="input-box" placeholder="Type message..." style="margin:0; font-size:11px;">
+        </div>
+    </div>
+
+    <div id="rootHub" class="modal" style="width: 85vw; max-width: 1000px;">
+        <h3 style="border-bottom: 1px solid var(--primary); margin:0 0 10px 0; display: flex; justify-content: space-between; padding-bottom: 5px;">
+            <span>OVERSEER_v16.1 // COMMAND_CENTER</span>
+            <span id="liveClock" style="font-size: 12px; opacity: 0.5; font-family: monospace;"></span>
+        </h3>
+        
+        <div style="display: grid; grid-template-columns: 250px 1fr 250px; gap: 15px; height: 450px;">
+            <div style="border-right: 1px solid var(--accent); padding-right: 10px; overflow-y: auto;">
+                <p style="font-size:10px; color:var(--primary); font-weight: bold; margin-bottom: 10px;">[ SYSTEM_FLAGS ]</p>
+                <div class="switch-row"><span>Lockdown Hint</span><label class="switch"><input type="checkbox" id="tHint" onchange="upGlobal('showHint', this.checked)"><span class="slider"></span></label></div>
+                <div class="switch-row"><span>Maint. Mode</span><label class="switch"><input type="checkbox" id="tMaint" onchange="upGlobal('maintMode', this.checked)"><span class="slider"></span></label></div>
+                <div class="switch-row"><span style="color:var(--panic)">Ghost All</span><label class="switch"><input type="checkbox" id="tGhost" onchange="upGlobal('ghostMode', this.checked)"><span class="slider"></span></label></div>
                 
-                <p style="font-size:10px; opacity:0.6; margin-top:15px;">BROADCAST:</p>
-                <input type="text" id="bcInput" class="input-box" placeholder="Message..." style="font-size:11px;">
-                <button class="btn-glow" style="background:var(--mod); color:white; padding:8px;" onclick="sendBroadcast()">SEND TO ALL</button>
+                <p style="font-size:10px; color:var(--primary); font-weight: bold; margin-top:15px; margin-bottom: 10px;">[ BRANDING ]</p>
+                <input type="text" id="sysTitleInp" class="input-box" style="font-size:11px;" placeholder="OS Name..." onchange="upGlobal('siteTitle', this.value)">
+                <input type="color" id="sysColorInp" style="width:100%; height:25px; background:none; border:1px solid var(--accent);" onchange="upGlobal('themeColor', this.value)">
+                
+                <button class="btn-glow" style="background:var(--panic); color:white; margin-top:20px; font-size: 11px;" onclick="triggerGlobalPanic()">PANIC ALL</button>
+                <button class="btn-glow" style="background:#444; color:white; font-size: 11px;" onclick="triggerGlobalRestart()">FORCE RESTART</button>
+                <button class="btn-glow" style="background:var(--mod); color:white; font-size: 11px;" onclick="clearGlobalChat()">CLEAR CHAT</button>
             </div>
-            <div>
-                <p style="font-size:10px; opacity:0.6;">LIVE USERS:</p>
-                <div id="rootLogs" class="log-box"></div>
+
+            <div style="display: flex; flex-direction: column;">
+                <p style="font-size:10px; color:var(--primary); font-weight: bold; margin-bottom: 10px;">[ EVENT_STREAM ]</p>
+                <div id="terminalBody" class="log-box" style="flex-grow: 1; font-family: 'Courier New', monospace; background: #050505; color: #00ff41; line-height: 1.4; border: 1px solid var(--accent);"></div>
+                <div style="display: flex; gap: 5px; margin-top: 5px;">
+                    <input type="text" id="bcInput" class="input-box" placeholder="Broadcast/Chat..." style="margin:0; font-size: 11px;">
+                    <button class="btn-glow" style="width: 80px; margin:0; font-size: 11px; background: var(--mod); color:white;" onclick="sendBroadcast()">SEND</button>
+                </div>
+            </div>
+
+            <div style="border-left: 1px solid var(--accent); padding-left: 10px; overflow-y: auto;">
+                <p style="font-size:10px; color:var(--primary); font-weight: bold; margin-bottom: 10px;">[ ACTIVE_PLEBS ]</p>
+                <div id="rootLogs"></div>
+                
+                <div style="margin-top: 20px; padding: 10px; background: #050505; border: 1px solid #111; border-radius: 4px;">
+                    <p style="font-size:11px;">SESSIONS: <span id="statSessions" style="color:var(--primary)">0</span></p>
+                    <p style="font-size:11px;">TRENDING: <span id="topGame" style="color:var(--mod)">None</span></p>
+                </div>
             </div>
         </div>
-        <button class="btn-glow" style="margin-top:10px;" onclick="toggleModal('rootHub')">EXIT</button>
+        <button class="btn-glow" style="margin-top:15px;" onclick="toggleModal('rootHub')">EXIT OVERSEER</button>
     </div>
 
     <div id="launcherModal" class="modal" style="width:300px;">
@@ -111,31 +153,35 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, onValue, set, update, push, onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, onValue, set, update, push, onDisconnect, serverTimestamp, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDgRvxKypPsOx379SNleE6Uij7mKkEJxGY", databaseURL: "https://monglearcade-default-rtdb.firebaseio.com", projectId: "monglearcade" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let userRole = "PLEB", userRef = null, myID = null;
+        let userRole = "PLEB", userRef = null, myID = null, userName = "Guest";
         let config = { url: localStorage.getItem('pUrl') || 'https://google.com', key: localStorage.getItem('pKey') || 'q', pendingUrl: '' };
 
-        // 1. FIXED KEY LISTENER (Captures even when focus is weird)
+        // 1. KEY LISTENERS
         window.addEventListener('keydown', (e) => {
             if (e.target.tagName === 'INPUT') {
-                if (e.shiftKey && e.key === 'L') document.getElementById('tosOverlay').style.display = 'flex';
-                return; // Don't panic while typing
+                if(e.key === 'Enter' && e.target.id === 'chatInput') sendChatMessage();
+                return;
             }
             if (e.key.toLowerCase() === config.key.toLowerCase()) { e.preventDefault(); triggerPanic(); }
             if (e.shiftKey && e.key === 'L') { e.preventDefault(); document.getElementById('tosOverlay').style.display = 'flex'; }
         }, true);
 
-        // 2. GLOBAL SYNC
+        // 2. GLOBAL SYNC & CHAT
         onValue(ref(db, 'system/config'), (snap) => {
             const d = snap.val() || {};
-            if (userRole === "MONGLE") return; // Admin is Immune
-            document.getElementById('maintenanceOverlay').style.display = d.maintMode ? "flex" : "none";
-            document.getElementById('entryHint').style.opacity = d.showHint ? "1" : "0";
+            if (userRole !== "MONGLE") {
+                document.getElementById('maintenanceOverlay').style.display = d.maintMode ? "flex" : "none";
+                document.getElementById('entryHint').style.opacity = d.showHint ? "1" : "0";
+            }
+            if(d.siteTitle) { document.title = d.siteTitle; document.getElementById('osTitle').innerText = d.siteTitle; document.getElementById('navTitle').innerText = d.siteTitle; }
+            if(d.themeColor) document.documentElement.style.setProperty('--primary', d.themeColor);
+            if (d.globalPanic && (Date.now() - d.globalPanic < 5000)) triggerPanic();
             if (d.restartSignal && d.restartSignal > (localStorage.getItem('lastR') || 0)) { localStorage.setItem('lastR', d.restartSignal); location.reload(); }
             if (d.lastBroadcast && d.lastBroadcast.time > (localStorage.getItem('lastBC') || 0)) {
                 localStorage.setItem('lastBC', d.lastBroadcast.time);
@@ -145,8 +191,21 @@
             }
         });
 
+        // Chat Listener
+        onValue(query(ref(db, 'system/chat'), limitToLast(50)), (snap) => {
+            const box = document.getElementById('chatBox');
+            box.innerHTML = "";
+            snap.forEach(c => {
+                const m = c.val();
+                box.innerHTML += `<div class="chat-msg"><b style="color:${m.role === 'MONGLE' ? 'var(--primary)' : 'var(--mod)'}">${m.user}</b>: ${m.text}</div>`;
+            });
+            box.scrollTop = box.scrollHeight;
+            if(userRole === "MONGLE") logToTerminal("New Chat Activity...", "#888");
+        });
+
         // 3. AUTH & ENTRY
         window.adminAuth = () => { const k = prompt("ROOT_KEY:"); if (k === "MONGLE_OWNER_99") upgrade("MONGLE"); };
+        
         function upgrade(role) {
             userRole = role; document.getElementById('lockdownScreen').style.display = 'none';
             document.getElementById('tosOverlay').style.display = 'none'; document.getElementById('mainApp').style.display = 'flex';
@@ -155,12 +214,13 @@
             if(userRef) update(userRef, { role: role });
             loadGames(); if(role === "MONGLE") startOverseer();
         }
+
         window.enterSite = () => {
-            const name = document.getElementById('plebUserInp').value.trim() || "Guest";
+            userName = document.getElementById('plebUserInp').value.trim() || "Guest";
             document.getElementById('tosOverlay').style.display = 'none';
             document.getElementById('lockdownScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'flex';
-            userRef = push(ref(db, 'system/presence'), { name: name, role: userRole, activity: "Menu", kicked: false, lastSeen: serverTimestamp() });
+            userRef = push(ref(db, 'system/presence'), { name: userName, role: userRole, activity: "Menu", kicked: false, lastSeen: serverTimestamp() });
             myID = userRef.key;
             onDisconnect(userRef).remove();
             onValue(ref(db, `system/presence/${myID}`), (s) => { if (s.exists() && s.val().kicked) window.location.replace("https://google.com"); });
@@ -168,22 +228,44 @@
         };
 
         // 4. OVERSEER TOOLS
-        function startOverseer() {
-            onValue(ref(db, 'system/presence'), (snap) => {
-                const logs = document.getElementById('rootLogs'); logs.innerHTML = "";
-                snap.forEach((child) => {
-                    const u = child.val(); const id = child.key; if (id === myID) return;
-                    logs.innerHTML += `<div class="user-row"><div><b>${u.name}</b><br><small>${u.activity}</small></div><button class="kick-btn" onclick="remoteKick('${id}')">KICK</button></div>`;
-                });
-            });
-            onValue(ref(db, 'system/config'), (s) => {
-                const d = s.val() || {};
-                document.getElementById('tHint').checked = !!d.showHint;
-                document.getElementById('tMaint').checked = !!d.maintMode;
-            });
+        function logToTerminal(msg, color = "var(--primary)") {
+            const term = document.getElementById('terminalBody');
+            const time = new Date().toLocaleTimeString().split(' ')[0];
+            term.innerHTML += `<div><span style="color:#555">[${time}]</span> <span style="color:${color}">${msg}</span></div>`;
+            term.scrollTop = term.scrollHeight;
         }
+
+        function startOverseer() {
+            logToTerminal("ROOT ACCESS GRANTED.", "#00ff41");
+            onValue(ref(db, 'system/presence'), (snap) => {
+                const logs = document.getElementById('rootLogs');
+                document.getElementById('statSessions').innerText = snap.size;
+                logs.innerHTML = "";
+                let activities = {};
+                snap.forEach((child) => {
+                    const u = child.val();
+                    if(u.activity.includes("Playing:")) activities[u.activity] = (activities[u.activity] || 0) + 1;
+                    logs.innerHTML += `<div class="user-row"><div><b>${u.name}</b><br><small>${u.activity}</small></div><button class="kick-btn" onclick="remoteKick('${child.key}')">KICK</button></div>`;
+                });
+                const top = Object.keys(activities).reduce((a, b) => activities[a] > activities[b] ? a : b, "None");
+                document.getElementById('topGame').innerText = top.replace("Playing: ", "");
+            });
+            setInterval(() => { document.getElementById('liveClock').innerText = new Date().toLocaleString(); }, 1000);
+        }
+
+        // Global Chat Logic
+        window.sendChatMessage = () => {
+            const inp = document.getElementById('chatInput');
+            if(inp.value.trim()) {
+                push(ref(db, 'system/chat'), { user: userName, text: inp.value, role: userRole, time: serverTimestamp() });
+                inp.value = "";
+            }
+        };
+
+        window.clearGlobalChat = () => { if(confirm("Clear chat?")) set(ref(db, 'system/chat'), null); };
         window.remoteKick = (id) => update(ref(db, `system/presence/${id}`), { kicked: true });
         window.upGlobal = (key, val) => update(ref(db, 'system/config'), { [key]: val });
+        window.triggerGlobalPanic = () => update(ref(db, 'system/config'), { globalPanic: Date.now() });
         window.triggerGlobalRestart = () => set(ref(db, 'system/config/restartSignal'), Date.now());
         window.sendBroadcast = () => {
             const msg = document.getElementById('bcInput').value;
@@ -192,18 +274,22 @@
 
         // 5. GAME LOADING
         async function loadGames() {
-            const res = await fetch(`https://api.github.com/repos/bob154526-hue/Mongle/contents/`);
-            const data = await res.json();
-            const grid = document.getElementById('gameGrid'); grid.innerHTML = "";
-            data.filter(f => f.name.endsWith('.html') && f.name !== 'index.html').forEach(f => {
-                const card = document.createElement('div'); card.className = 'game-card';
-                card.innerText = f.name.replace('.html','').replace(/[-_]/g, ' ');
-                card.onclick = () => { config.pendingUrl = `https://raw.githack.com/bob154526-hue/Mongle/main/${f.name}`; document.getElementById('targetGameTitle').innerText = card.innerText; toggleModal('launcherModal'); };
-                grid.appendChild(card);
-            });
+            try {
+                const res = await fetch(`https://api.github.com/repos/bob154526-hue/Mongle/contents/`);
+                const data = await res.json();
+                const grid = document.getElementById('gameGrid'); grid.innerHTML = "";
+                data.filter(f => f.name.endsWith('.html') && f.name !== 'index.html').forEach(f => {
+                    const card = document.createElement('div'); card.className = 'game-card';
+                    card.innerText = f.name.replace('.html','').replace(/[-_]/g, ' ');
+                    card.onclick = () => { config.pendingUrl = `https://raw.githack.com/bob154526-hue/Mongle/main/${f.name}`; document.getElementById('targetGameTitle').innerText = card.innerText; toggleModal('launcherModal'); };
+                    grid.appendChild(card);
+                });
+            } catch(e) { console.error("Repo error."); }
         }
+
         window.launchGame = (type) => {
-            update(userRef, { activity: `Playing: ${document.getElementById('targetGameTitle').innerText}` });
+            const gName = document.getElementById('targetGameTitle').innerText;
+            if(userRef) update(userRef, { activity: `Playing: ${gName}` });
             if (type === 'stealth') {
                 const win = window.open('about:blank', '_blank');
                 win.document.body.innerHTML = `<iframe src="${config.pendingUrl}" style="position:fixed; top:0; left:0; width:100%; height:100%; border:none;"></iframe>`;
@@ -211,15 +297,15 @@
             toggleModal('launcherModal');
         };
 
-        // 6. UI HELPERS
-        window.toggleModal = (id) => { const e = document.getElementById(id); e.style.display = (e.style.display === 'block') ? 'none' : 'block'; };
+        window.toggleModal = (id) => { const e = document.getElementById(id); e.style.display = (e.style.display === 'flex' || e.style.display === 'block') ? 'none' : (id === 'chatWidget' ? 'flex' : 'block'); };
         window.triggerPanic = () => window.location.replace(config.url);
         window.saveSettings = () => { config.url = document.getElementById('pUrl').value; localStorage.setItem('pUrl', config.url); toggleModal('settingsMenu'); };
         window.setNewKey = () => {
-            const display = document.getElementById('pKeyDisplay'); display.value = "PRESS ANY KEY...";
+            const display = document.getElementById('pKeyDisplay'); display.value = "PRESS KEY...";
             const capture = (e) => { e.preventDefault(); config.key = e.key; display.value = e.key; localStorage.setItem('pKey', e.key); window.removeEventListener('keydown', capture, true); };
             window.addEventListener('keydown', capture, true);
         };
+
         document.getElementById('pKeyDisplay').value = config.key;
         document.getElementById('pUrl').value = config.url;
     </script>
