@@ -8,20 +8,17 @@
         :root { --primary: #00ff41; --bg: #000; --card: #0a0a0a; --accent: #003b00; --panic: #ff3131; --neon: 0 0 10px var(--primary); }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--primary); font-family: 'Segoe UI', sans-serif; overflow: hidden; }
         
-        /* FIXED FAILSAFE: HIGHEST PRIORITY */
         #failsafeNode { position: fixed; bottom: 0; right: 0; width: 40px; height: 40px; z-index: 2147483647; cursor: crosshair; background: transparent; pointer-events: auto !important; }
-        
-        /* PRANK OVERLAYS: allow clicks to pass through to failsafe */
+        #failsafeNode:hover { background: rgba(0, 255, 65, 0.05); }
+
         #cinematicAlert { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100000; display: none; align-items: center; justify-content: center; text-align: center; pointer-events: none; }
         #bigText { font-size: 8vw; font-weight: 900; color: white; text-transform: uppercase; text-shadow: 0 0 30px red; }
         #freezeOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 90000; display: none; cursor: not-allowed; backdrop-filter: blur(2px); pointer-events: none; }
 
-        /* STEALTH TICKER */
         #serverTicker { position: fixed; top: 0; left: 0; width: 100%; background: rgba(0,255,65,0.1); color: var(--primary); height: 25px; line-height: 25px; font-size: 11px; z-index: 80000; display: none; overflow: hidden; border-bottom: 1px solid var(--accent); }
         .ticker-text { position: absolute; white-space: nowrap; animation: ticker 15s linear infinite; }
         @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
-        /* UI ELEMENTS */
         #lockdownScreen { position: fixed; inset: 0; background: #fff; z-index: 70000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #000; }
         #mainApp { display: none; height: 100vh; flex-direction: column; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--accent); background: #050505; transition: margin 0.3s; }
@@ -31,16 +28,12 @@
         .game-card { background: var(--card); border: 1px solid var(--accent); padding: 20px; border-radius: 8px; text-align: center; cursor: pointer; transition: 0.3s; }
         .game-card:hover { border-color: var(--primary); transform: scale(1.05); box-shadow: var(--neon); }
 
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0a0a0a; border: 2px solid var(--primary); padding: 20px; z-index: 150000; width: 420px; border-radius: 12px; }
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0a0a0a; border: 2px solid var(--primary); padding: 20px; z-index: 150000; width: 400px; border-radius: 12px; }
         .input-box { background: #000; border: 1px solid var(--accent); color: var(--primary); padding: 10px; width: 100%; box-sizing: border-box; margin-bottom: 8px; font-family: inherit; border-radius: 5px; text-align: center; }
         .btn-glow { background: var(--primary); color: #000; font-weight: bold; border: none; cursor: pointer; padding: 10px; border-radius: 5px; width: 100%; margin-top: 5px; }
         
-        /* LOGS & KICK BUTTONS */
-        .log-container { background: #050505; border: 1px solid #222; height: 120px; overflow-y: auto; font-size: 10px; padding: 5px; margin-bottom: 10px; }
-        .log-entry { border-bottom: 1px solid #111; padding: 6px; display: flex; justify-content: space-between; align-items: center; gap: 5px; }
-        .action-btns { display: flex; gap: 4px; }
-        .kick-btn { background: #ff3131; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 9px; font-weight: bold; }
-        .shadow-btn { background: #444; color: #00ff41; border: 1px solid #00ff41; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 9px; }
+        .log-container { background: #050505; border: 1px solid #222; height: 80px; overflow-y: auto; font-size: 10px; padding: 5px; margin-bottom: 10px; }
+        .log-entry { border-bottom: 1px solid #111; padding: 4px; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
@@ -74,10 +67,8 @@
         <h2 style="color:red; margin:0 0 10px 0; text-align:center;">ROOT_CONSOLE</h2>
         <div id="userLogs" class="log-container"></div>
         <button class="btn-glow" style="background:red; color:white; margin-bottom:10px;" onclick="emergencyReset()">🚨 WIPE ALL PRANKS</button>
-        
         <input type="text" id="tickerInp" class="input-box" placeholder="Ticker Message...">
         <button class="btn-glow" onclick="setTicker(true)">UPDATE TICKER</button>
-        
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-top:10px;">
             <button class="btn-glow" id="muteToggleBtn" onclick="toggleMute()">MUTE: OFF</button>
             <button class="btn-glow" style="background:purple; color:white;" onclick="setBigText(true)">BIG MSG</button>
@@ -104,53 +95,27 @@
         let currentUserName = "";
         window.isRoot = false;
 
-        // EMERGENCY RESET (Clears Kicks too)
         window.emergencyReset = () => {
             set(ref(db, 'system/bigText'), { active: false });
             set(ref(db, 'system/mute'), false);
             set(ref(db, 'system/ticker'), { active: false });
             remove(ref(db, 'system/shadowList'));
-            remove(ref(db, 'system/kickList'));
         };
 
-        // KICK / EJECT LOGIC
-        window.triggerKick = (name) => {
-            if(confirm(`Eject user ${name}?`)) {
-                set(ref(db, `system/kickList/${name}`), true);
-                setTimeout(() => remove(ref(db, `system/kickList/${name}`)), 2000); // Reset trigger after 2s
-            }
-        };
-
-        onValue(ref(db, 'system/kickList'), (s) => {
-            const list = s.val() || {};
-            if(list[currentUserName] && !window.isRoot) {
-                window.location.replace("https://www.google.com");
-            }
-        });
-
-        // LIVE TRAFFIC & LOGS
-        onValue(ref(db, 'system/logs'), (s) => {
-            const data = s.val() || {};
-            document.getElementById('userCount').innerText = Object.keys(data).length;
-            const logBox = document.getElementById('userLogs'); logBox.innerHTML = "";
-            Object.entries(data).forEach(([key, l]) => {
-                logBox.innerHTML += `
-                <div class="log-entry">
-                    <span>${l.user}</span>
-                    <div class="action-btns">
-                        <button class="shadow-btn" onclick="set(ref(db, 'system/shadowList/${l.user}'), true)">SHADOW</button>
-                        <button class="kick-btn" onclick="triggerKick('${l.user}')">KICK</button>
-                    </div>
-                </div>`;
-            });
-        });
-
-        // SYSTEM SYNC
         onValue(ref(db, 'system/ticker'), (s) => {
             const d = s.val() || { active: false };
             document.getElementById('serverTicker').style.display = d.active ? 'block' : 'none';
             document.getElementById('topBar').style.marginTop = d.active ? '25px' : '0';
             document.getElementById('tickerMsg').innerText = d.text || "";
+        });
+
+        onValue(ref(db, 'system/logs'), (s) => {
+            const data = s.val() || {};
+            document.getElementById('userCount').innerText = Object.keys(data).length;
+            const logBox = document.getElementById('userLogs'); logBox.innerHTML = "";
+            Object.entries(data).forEach(([key, l]) => {
+                logBox.innerHTML += `<div class="log-entry"><span>${l.user}</span><button style="font-size:8px;" onclick="set(ref(db, 'system/shadowList/${l.user}'), true)">SHADOW</button></div>`;
+            });
         });
 
         onValue(ref(db, 'system/mute'), (s) => {
@@ -170,7 +135,6 @@
             if(list[currentUserName] && !window.isRoot) document.getElementById('gameGrid').innerHTML = "<h1 style='margin-top:100px; color:#222; text-align:center;'>OS_FATAL_ERROR: 503</h1>";
         });
 
-        // ADMIN CONTROLS
         window.setTicker = (active) => set(ref(db, 'system/ticker'), { active, text: document.getElementById('tickerInp').value });
         window.toggleMute = () => set(ref(db, 'system/mute'), !document.getElementById('muteToggleBtn').innerText.includes("ON"));
         window.setBigText = (active) => set(ref(db, 'system/bigText'), { active, text: prompt("Enter Message:") });
@@ -196,14 +160,4 @@
             list.forEach(f => {
                 const card = document.createElement('div'); card.className = 'game-card';
                 card.innerText = f.name.replace('.html','').replace(/[-_]/g, ' ');
-                card.onclick = () => window.open(`https://raw.githack.com/bob154526-hue/Mongle/main/${f.name}`, '_blank');
-                grid.appendChild(card);
-            });
-        }
-
-        window.triggerPanic = () => window.location.replace("https://google.com");
-        document.addEventListener('keydown', (e) => { if(e.shiftKey && e.key === 'L') enter(); });
-        function enter() { document.getElementById('lockdownScreen').style.display = 'none'; document.getElementById('authLayer').style.display = 'flex'; }
-    </script>
-</body>
-</html>
+                card.onclick = () => window.open(`https://raw.githack.com/bob154526-hue/Mongle/main/${f.name}`,
