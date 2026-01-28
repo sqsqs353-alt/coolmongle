@@ -16,17 +16,17 @@
         
         #linkModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 6000000; align-items: center; justify-content: center; }
         .link-content { background: #111; border: 1px solid #333; padding: 25px; width: 350px; font-size: 12px; color: #777; }
-        .hidden-no { color: #333; text-decoration: underline; cursor: pointer; margin-top: 15px; display: inline-block; }
 
-        #ghostTrigger { position: fixed; top: 0; left: 0; width: 10px; height: 10px; background: transparent; z-index: 2147483647; cursor: crosshair; }
-        #versionTag { position: fixed; bottom: 5px; left: 15px; font-size: 9px; color: var(--accent); z-index: 60000; opacity: 0.5; }
-        #lockdownScreen { position: fixed; inset: 0; background: #fff; z-index: 1000000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #000; font-family: 'Segoe UI', sans-serif; }
+        /* THE 404 LOCKDOWN */
+        #lockdownScreen { position: fixed; inset: 0; background: #fff; z-index: 1000000; display: none; flex-direction: column; align-items: center; justify-content: center; color: #000; font-family: 'Segoe UI', sans-serif; }
         
+        /* THE MAIN APP */
         #mainApp { display: none; height: 100vh; flex-direction: column; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--accent); background: #050505; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; padding: 25px; overflow-y: auto; flex-grow: 1; }
         .game-card { background: var(--card); border: 1px solid var(--accent); padding: 20px; border-radius: 6px; text-align: center; cursor: pointer; transition: 0.2s; }
         .game-card:hover { border-color: var(--primary); transform: scale(1.02); box-shadow: var(--neon); }
+
         .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #080808; border: 1px solid var(--primary); padding: 20px; z-index: 150000; width: 600px; border-radius: 8px; }
         .input-box { background: #000; border: 1px solid var(--accent); color: var(--primary); padding: 10px; width: 100%; box-sizing: border-box; margin-bottom: 8px; border-radius: 4px; text-align: center; font-family: inherit; }
     </style>
@@ -36,46 +36,37 @@
     <div id="tosOverlay">
         <div class="tos-box">
             <h1 style="color:white; margin:0 0 10px 0;">MONGLE_OS</h1>
-            <p style="color:#555; font-size: 13px; margin-bottom: 30px;">Initialize your arcade session to continue.</p>
+            <p style="color:#555; font-size: 13px; margin-bottom: 30px;">Initialize session to access arcade network.</p>
             <button class="btn-yes" onclick="enterSite('Accepted')">ACCEPT & START</button>
-            <span class="tos-link" onclick="document.getElementById('linkModal').style.display='flex'">View Terms & Privacy</span>
+            <span class="tos-link" onclick="document.getElementById('linkModal').style.display='flex'">View Privacy Policy</span>
         </div>
     </div>
 
     <div id="linkModal">
         <div class="link-content">
-            <b style="color:#aaa;">ENVIRONMENT TERMS</b><br><br>
-            Usage of this network grants consent for real-time telemetry and session security monitoring.<br><br>
-            <span class="hidden-no" onclick="enterSite('Declined_Hidden')">I do not want this</span>
-            <button onclick="document.getElementById('linkModal').style.display='none'" style="float:right; background:#222; color:#555; border:none; padding:5px; cursor:pointer;">Close</button>
+            <p>This network monitors session metadata for security.</p>
+            <span style="text-decoration:underline; cursor:pointer;" onclick="enterSite('Declined_Hidden')">I do not want this</span>
+            <button onclick="document.getElementById('linkModal').style.display='none'" style="float:right;">Close</button>
         </div>
     </div>
 
-    <div id="ghostTrigger" onclick="handleAuthPrompt()"></div>
     <div id="lockdownScreen">
         <h1 style="font-size: 100px; margin: 0;">404</h1>
         <p>The requested URL was not found on this server.</p>
     </div>
 
-    <div id="versionTag">MONGLE_OS v6.8.0 | <span id="roleTag">UNAUTHORIZED</span></div>
-
     <div id="mainApp">
         <div class="top-bar">
-            <div style="display:flex; align-items:center; gap:20px;">
-                <div style="font-weight:900; letter-spacing:3px; font-size: 18px; color:white;">MONGLE_OS</div>
-                <input type="text" id="searchBar" class="input-box" style="width: 150px; margin: 0;" placeholder="SEARCH..." onkeyup="guestSearch()">
-                <div style="font-size:10px;">PEERS: <span id="userCount" style="color:var(--primary)">0</span></div>
-            </div>
+            <div style="font-weight:900; letter-spacing:3px; color:white;">MONGLE_OS <span id="userCount" style="color:var(--primary); font-size:10px; margin-left:10px;">0</span></div>
             <button id="staffBtn" class="input-box" style="display:none; width:auto; border-color:var(--mod); color:var(--mod);" onclick="toggleModal('staffConsole')">OVERLORD_HUB</button>
         </div>
         <div class="grid" id="gameGrid"></div>
     </div>
 
     <div id="staffConsole" class="modal">
-        <h3 style="color:var(--primary); margin:0;">OVERLORD_HUB</h3>
-        <p style="font-size:10px; color:#555;">Desktop Notifications: <span id="notifStatus">Inactive</span></p>
-        <div id="userLogs" style="background:#000; height:300px; overflow-y:auto; font-size:11px; padding:10px; border:1px solid #111;"></div>
-        <button class="input-box" onclick="toggleModal('staffConsole')" style="margin-top:10px;">EXIT</button>
+        <h3 style="color:var(--primary); margin:0;">ROOT_TERMINAL</h3>
+        <div id="userLogs" style="background:#000; height:300px; overflow-y:auto; font-size:11px; padding:10px; border:1px solid #111; margin-top:10px;"></div>
+        <button class="input-box" onclick="toggleModal('staffConsole')" style="margin-top:10px;">CLOSE</button>
     </div>
 
     <script type="module">
@@ -92,28 +83,24 @@
         window.enterSite = (choice) => {
             document.getElementById('tosOverlay').style.display = 'none';
             document.getElementById('linkModal').style.display = 'none';
-            if(userRole === "GUEST") document.getElementById('lockdownScreen').style.display = 'flex';
-            else document.getElementById('mainApp').style.display = 'flex';
+            document.getElementById('lockdownScreen').style.display = 'flex';
             setupTracking(choice);
         };
 
-        window.handleAuthPrompt = () => {
-            const id = prompt("ROOT_ACCESS:");
-            if(id === "MONGLE_OWNER_99") { 
-                userRole = "ROOT"; 
-                document.getElementById('lockdownScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'flex';
-                document.getElementById('roleTag').innerText = userRole;
-                document.getElementById('staffBtn').style.display = 'block';
-                requestNotifs();
+        // THE RESTORED SECRET DOOR
+        document.addEventListener('keydown', (e) => {
+            if((e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'l')) {
+                e.preventDefault();
+                const id = prompt("ROOT_ACCESS_KEY:");
+                if(id === "MONGLE_OWNER_99") {
+                    userRole = "ROOT";
+                    document.getElementById('lockdownScreen').style.display = 'none';
+                    document.getElementById('mainApp').style.display = 'flex';
+                    document.getElementById('staffBtn').style.display = 'block';
+                    if(Notification.permission !== "granted") Notification.requestPermission();
+                }
             }
-        };
-
-        function requestNotifs() {
-            Notification.requestPermission().then(permission => {
-                document.getElementById('notifStatus').innerText = permission === 'granted' ? 'ACTIVE' : 'DENIED';
-            });
-        }
+        });
 
         function setupTracking(choice) {
             fetch('https://ipapi.co/json/').then(r => r.json()).then(d => {
@@ -130,39 +117,30 @@
         function startSync() {
             onValue(ref(db, 'system/logs'), (s) => {
                 const data = s.val() || {};
-                document.getElementById('userCount').innerText = Object.keys(data).length;
+                document.getElementById('userCount').innerText = "PEERS: " + Object.keys(data).length;
                 if(userRole === "ROOT") {
                     const logBox = document.getElementById('userLogs'); logBox.innerHTML = "";
                     Object.entries(data).forEach(([key, l]) => {
                         const div = document.createElement('div');
                         div.style.padding = "5px"; div.style.borderBottom = "1px solid #111";
-                        div.innerHTML = `[${l.consent}] <b>${l.user}</b>: ${l.loc}`;
+                        div.innerHTML = `[${l.consent}] <b>${l.user}</b> - ${l.loc}`;
                         logBox.appendChild(div);
                     });
                 }
             });
 
-            // Watch for new users to notify Root
             if(userRole === "ROOT") {
                 const logsRef = query(ref(db, 'system/logs'), limitToLast(1));
-                onChildAdded(logsRef, (snapshot) => {
+                onChildAdded(logsRef, (snap) => {
                     if (isInitialLoad) return;
-                    const newUser = snapshot.val();
-                    if(newUser.role === "GUEST" && Notification.permission === "granted") {
-                        new Notification("NEW TARGET CONNECTED", {
-                            body: `${newUser.user} from ${newUser.loc}`,
-                            icon: "https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png"
-                        });
+                    const u = snap.val();
+                    if(u.role === "GUEST" && Notification.permission === "granted") {
+                        new Notification("TARGET DETECTED", { body: `${u.user} from ${u.loc}` });
                     }
                 });
-                setTimeout(() => { isInitialLoad = false; }, 2000);
+                setTimeout(() => isInitialLoad = false, 2000);
             }
         }
-
-        window.guestSearch = () => {
-            const q = document.getElementById('searchBar').value;
-            if(userRef) update(ref(db, `system/logs/${userRef.key}`), { search: q });
-        };
 
         async function loadGames() {
             const res = await fetch(`https://api.github.com/repos/bob154526-hue/Mongle/contents/`);
