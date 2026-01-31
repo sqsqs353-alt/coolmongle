@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lurking Gaze</title>
+  <style>
+    body { margin:0; overflow:hidden; background:#000; font-family: 'Courier New', monospace; transition: filter 0.4s, background 0.8s; }
+    body.low { filter: saturate(0.55) contrast(1.35) brightness(0.85); background: #0a0000; }
+    #ui { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); color: #c00; font-size: 1.6rem; letter-spacing: 3px; text-shadow: 0 0 12px #000; pointer-events: none; z-index: 100; }
+    #sanityBar { width: 380px; height: 30px; background: #111; border: 3px solid #400; border-radius: 8px; overflow: hidden; box-shadow: 0 0 30px rgba(200,0,0,0.4); }
+    #sanityFill { height: 100%; background: linear-gradient(90deg, #c00, #ff4400, #ffaa00); transition: width 0.2s; box-shadow: inset 0 0 15px #fff; }
+    body.low #sanityFill { animation: panic 0.8s infinite alternate; }
+    @keyframes panic { 0% { box-shadow: 0 0 15px #f00; } 100% { box-shadow: 0 0 45px #f00, inset 0 0 25px #f00; } }
+    #crosshair { position: absolute; inset: 0; margin: auto; width: 24px; height: 24px; pointer-events: none; background: radial-gradient(circle, transparent 35%, #f00 40%, #f00 60%, transparent 65%), conic-gradient(transparent 0 80deg, #800 80deg 100deg, #f00 100deg 260deg, transparent 260deg); border-radius: 50%; opacity: 0.9; transition: all 0.3s; }
+    body.low #crosshair { animation: distort 1.4s infinite; width: 30px; height: 30px; opacity: 1; }
+    @keyframes distort { 0%,100% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.5) rotate(90deg); } }
+    #title, #death { position: fixed; inset: 0; background: rgba(8,0,0,0.98); color: #c00; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 3rem; text-align: center; text-shadow: 0 0 20px #000; z-index: 300; cursor: pointer; backdrop-filter: blur(6px); }
+    #title h1 { font-size: 5.8rem; margin: 0 0 60px; letter-spacing: 10px; color: #f22; text-shadow: 0 0 40px #800; animation: flicker 5s infinite; }
+    @keyframes flicker { 0%,18%,20%,22%,24%,52%,54%,100% { opacity:1; } 19%,21%,23%,53% { opacity:0.35; } }
+    #title p { font-size: 1.6rem; margin: 15px; opacity: 0.9; }
+    #death { display: none; }
+    #death h1 { font-size: 7rem; animation: shake 0.7s infinite; }
+    @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+    button { margin-top: 50px; padding: 22px 70px; background: #400; color: white; border: 3px solid #800; font-size: 2rem; border-radius: 10px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 40px rgba(255,0,0,0.5); }
+    button:hover { background: #600; transform: scale(1.1); box-shadow: 0 0 60px #f00; }
+  </style>
+</head>
+<body>
+
+<div id="title">
+  <h1>LURKING GAZE</h1>
+  <p>Click to descend</p>
+  <p>WASD / Arrows: Move | Mouse: Look</p>
+  <p><strong>Don't look at them.</strong></p>
+  <small>(ESC to pause | P for panic flash)</small>
+</div>
+
+<div id="death">
+  <h1>GAZE RETURNED</h1>
+  <p>The void has you now.</p>
+  <button onclick="location.reload()">DESCEND AGAIN</button>
+</div>
+
+<div id="ui">
+  <div id="sanityBar"><div id="sanityFill" style="width:100%"></div></div>
+</div>
+<div id="crosshair"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.168.0/examples/js/controls/PointerLockControls.js"></script>
+
+<script>
+// ────────────────────────────────────────────────────────────────
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x080808);
+scene.fog = new THREE.FogExp2(0x030303, 0.024);
+
+const camera = new THREE.PerspectiveCamera(76, innerWidth / innerHeight, 0.1, 100);
+camera.position.set(0, 1.6, 5);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+const controls = new THREE.PointerLockControls(camera, renderer.domElement);
+scene.add(controls.getObject());
+
+const title = document.getElementById('title');
+const death = document.getElementById('death');
+const sanityFill = document.getElementById('sanityFill');
+
+title.addEventListener('click', () => controls.lock());
+
+let move = { forward: false, backward: false, left: false, right: false };
+const speed = 8;
+
+// ─── Pointer Lock Fix ───────────────────────────────────────────────
+document.addEventListener('pointerlockchange', () => {
+  if (document.pointerLockElement) title.style.display = 'none';
+  else if (!gameOver) title.style.display = 'flex';
+});
+document.addEventListener('pointerlockerror', () => {
+  alert('Pointer lock failed. Try Chrome/Firefox desktop, refresh, or click directly.');
+});
+
+document.addEventListener('keydown', e => {
+  switch (e.code) {
+    case 'KeyW': case 'ArrowUp':    move.forward = true; break;
+    case 'KeyS': case 'ArrowDown':  move.backward = true; break;
+    case 'KeyA': case 'ArrowLeft':  move.left = true; break;
+    case 'KeyD': case 'ArrowRight': move.right = true; break;
+    case 'Escape': controls.unlock(); break;
+    case 'KeyP': flashPanic(); break;
+  }
+});
+document.addEventListener('keyup', e => {
+  switch (e.code) {
+    case 'KeyW': case 'ArrowUp':    move.forward = false; break;
+    case 'KeyS': case 'ArrowDown':  move.backward = false; break;
+    case 'KeyA': case 'ArrowLeft':  move.left = false; break;
+    case 'KeyD': case 'ArrowRight': move.right = false; break;
+  }
+});
+
+// ─── World ──────────────────────────────────────────────────────────
+scene.add(new THREE.AmbientLight(0x222244, 0.3));
+
+const lantern = new THREE.PointLight(0xffaa88, 2.5, 30, 2);
+lantern.position.set(0, 2, 0);
+scene.add(lantern);
+
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(200, 200),
+  new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.95 })
+);
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+// Walls / obstacles (simple maze)
+function wall(x, z, w, d) {
+  const m = new THREE.Mesh(
+    new THREE.BoxGeometry(w, 6, d),
+    new THREE.MeshStandardMaterial({ color: 0x151515 })
+  );
+  m.position.set(x, 3, z);
+  m.castShadow = true;
+  scene.add(m);
+}
+wall(0, -50, 120, 4); wall(0, 50, 120, 4);
+wall(-60, 0, 4, 100); wall(60, 0, 4, 100);
+for (let i = 0; i < 12; i++) {
+  wall((Math.random() - 0.5) * 80, (Math.random() - 0.5) * 80, 4 + Math.random() * 4, 4 + Math.random() * 4);
+}
+
+// ─── Lurkers ────────────────────────────────────────────────────────
+const lurkerMat = new THREE.MeshStandardMaterial({ color: 0x0a110a, emissive: 0x0f1f0f, emissiveIntensity: 1, roughness: 0.2 });
+const lurkers = [];
+for (let i = 0; i < 7; i++) {
+  const l = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.3, 0.9, 5, 6),
+    lurkerMat.clone()
+  );
+  l.position.set((Math.random() - 0.5) * 90, 2.5, (Math.random() - 0.5) * 90 - 30);
+  l.castShadow = true;
+  l.visible = false;
+  scene.add(l);
+  lurkers.push(l);
+}
+
+// ─── Game Vars ──────────────────────────────────────────────────────
+let sanity = 100;
+let gameOver = false;
+let panicFlash = 0;
+let prevTime = performance.now();
+
+// ─── Panic Flash (P key) ────────────────────────────────────────────
+function flashPanic() {
+  panicFlash = 3;
+  const osc = new (window.AudioContext || window.webkitAudioContext)().createOscillator();
+  osc.type = 'sawtooth'; osc.frequency.value = 800;
+  const g = osc.context.createGain(); g.gain.setValueAtTime(0.6, 0);
+  g.gain.exponentialRampToValueAtTime(0.01, 1);
+  osc.connect(g).connect(osc.context.destination);
+  osc.start(); osc.stop(osc.context.currentTime + 1);
+}
+
+// ─── Main Loop ──────────────────────────────────────────────────────
+function animate(now) {
+  requestAnimationFrame(animate);
+  const dt = (now - prevTime) / 1000;
+  prevTime = now;
+
+  if (!controls.isLocked || gameOver) {
+    renderer.render(scene, camera);
+    return;
+  }
+
+  // Movement
+  const dir = new THREE.Vector3();
+  const fwd = new THREE.Vector3();
+  camera.getWorldDirection(fwd); fwd.y = 0; fwd.normalize();
+  const right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0,1,0)).normalize();
+
+  if (move.forward) dir.addScaledVector(fwd, speed * dt);
+  if (move.backward) dir.addScaledVector(fwd, -speed * 0.6 * dt);
+  if (move.left) dir.addScaledVector(right, -speed * 0.8 * dt);
+  if (move.right) dir.addScaledVector(right, speed * 0.8 * dt);
+
+  controls.moveForward(dir.z);
+  controls.moveRight(dir.x);
+
+  // Lantern follows camera
+  lantern.position.copy(camera.position);
+  lantern.position.y -= 0.4;
+
+  // Flicker
+  lantern.intensity = 2.5 + Math.sin(now * 0.01) * 0.8 + Math.sin(now * 0.025) * 0.4;
+
+  // Lurkers
+  let closest = 999;
+  let visible = 0;
+  const lookDir = new THREE.Vector3(); camera.getWorldDirection(lookDir);
+  lurkers.forEach(l => {
+    const dist = camera.position.distanceTo(l.position);
+    if (dist < closest) closest = dist;
+
+    if (dist < 35) {
+      const toPlayer = new THREE.Vector3().subVectors(camera.position, l.position).normalize();
+      toPlayer.y = 0;
+      l.position.addScaledVector(toPlayer, 2.2 * dt * (sanity < 50 ? 1.5 : 1));
+      l.lookAt(camera.position.x, l.position.y, camera.position.z);
+    }
+
+    const toL = new THREE.Vector3().subVectors(l.position, camera.position).normalize();
+    if (lookDir.dot(toL) > 0.82 && dist < 35) {
+      l.visible = true;
+      visible++;
+    } else l.visible = false;
+  });
+
+  // Sanity
+  sanity -= visible * 70 * dt;
+  if (closest < 12) sanity -= 80 * dt;
+  else if (closest < 25) sanity -= 20 * dt;
+  if (closest > 40 && visible === 0) sanity += 15 * dt;
+  sanity = Math.max(0, Math.min(100, sanity));
+
+  sanityFill.style.width = sanity + '%';
+
+  // Effects
+  document.body.classList.toggle('low', sanity < 45);
+  scene.fog.density = 0.024 + (100 - sanity) * 0.0012;
+  camera.fov = 76 + (100 - sanity) * 0.25;
+  camera.updateProjectionMatrix();
+
+  if (sanity < 30) {
+    const shake = (30 - sanity) / 30 * 0.1;
+    camera.position.x += (Math.random() - 0.5) * shake;
+    camera.position.y += (Math.random() - 0.5) * shake * 0.6;
+    camera.rotation.z += (Math.random() - 0.5) * shake * 0.3;
+  }
+
+  // Panic flash
+  if (panicFlash > 0) {
+    scene.background.set(0xff0000);
+    panicFlash -= dt * 5;
+  } else scene.background.set(0x080808);
+
+  // Game over
+  if (sanity <= 0 && !gameOver) {
+    gameOver = true;
+    death.style.display = 'flex';
+    flashPanic();
+  }
+
+  renderer.render(scene, camera);
+}
+
+animate(performance.now());
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>
