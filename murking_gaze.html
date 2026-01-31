@@ -32,7 +32,7 @@
   <h1>LURKING GAZE</h1>
   <p>Click anywhere or press SPACE to start</p>
   <p>WASD / Arrows → Move</p>
-  <p>Mouse → Look (lock should engage automatically)</p>
+  <p>Mouse → Look (should lock automatically)</p>
   <p><strong>DO NOT look directly at the green things</strong></p>
 </div>
 
@@ -48,8 +48,9 @@
 <div id="crosshair"></div>
 <div id="status">Click to start...</div>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.168.0/examples/js/controls/PointerLockControls.js"></script>
+<!-- Use a version where PointerLockControls still works globally -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/PointerLockControls.min.js"></script>
 
 <script>
 const scene = new THREE.Scene();
