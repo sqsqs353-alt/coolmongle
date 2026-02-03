@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MONGLE_DEBUG_ENV</title>
+    <style>
+        :root { --matrix: #00ff41; --bg: #050505; }
+        body { margin: 0; background: var(--bg); color: var(--matrix); font-family: 'Courier New', monospace; overflow: hidden; touch-action: none; }
+        canvas { display: block; image-rendering: pixelated; }
+        
+        /* Debug Overlay */
+        #debug-panel {
+            position: fixed; top: 10px; right: 10px; width: 200px;
+            background: rgba(0, 20, 0, 0.8); border: 1px solid var(--matrix);
+            padding: 10px; font-size: 11px; pointer-events: none; z-index: 100;
+        }
+        .stat { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .stat b { color: #fff; }
+
+        /* Controls Tip */
+        #hint { position: fixed; bottom: 10px; left: 10px; font-size: 10px; opacity: 0.6; }
+    </style>
+</head>
+<body>
+
+    <div id="debug-panel">
+        <div class="stat"><span>FPS:</span><b id="fps">0</b></div>
+        <div class="stat"><span>X:</span><b id="posX">0</b></div>
+        <div class="stat"><span>Y:</span><b id="posY">0</b></div>
+        <div class="stat"><span>ENTITIES:</span><b id="entCount">0</b></div>
+        <div class="stat"><span>STATE:</span><b id="gameState">BOOTING</b></div>
+    </div>
+
+    <div id="hint">TAP/CLICK TO REPEL | MONGLE_V4_DEBUG</div>
+    <canvas id="gameCanvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Debug Refs
+    const ui = {
+        fps: document.getElementById('fps'),
+        x: document.getElementById('posX'),
+        y: document.getElementById('posY'),
+        ents: document.getElementById('entCount'),
+        state: document.getElementById('gameState')
+    };
+
+    let entities = [];
+    let lastTime = 0;
+    const player = { x: 0, y: 0, r: 20, active: false };
+
+    function init() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        player.x = canvas.width / 2;
+        player.y = canvas.height / 2;
+        ui.state.innerText = "RUNNING";
+        spawnEntities(15);
+    }
+
+    function spawnEntities(n) {
+        for(let i=0; i<n; i++) {
+            entities.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 2,
+                vy: (Math.random() - 0.5) * 2,
+                r: Math.random() * 5 + 2
+            });
+        }
+    }
+
+    // Input Handling
+    const handleInput = (e) => {
+        const t = e.touches ? e.touches[0] : e;
+        player.x = t.clientX;
+        player.y = t.clientY;
+        player.active = true;
+    };
+
+    window.addEventListener('mousemove', handleInput);
+    window.addEventListener('touchstart', handleInput);
+    window.addEventListener('touchend', () => player.active = false);
+
+    function update(deltaTime) {
+        entities.forEach(ent => {
+            ent.x += ent.vx;
+            ent.y += ent.vy;
+
+            // Bounce walls
+            if(ent.x < 0 || ent.x > canvas.width) ent.vx *= -1;
+            if(ent.y < 0 || ent.y > canvas.height) ent.vy *= -1;
+
+            // Debug Interaction: Repel from player
+            if(player.active) {
+                const dx = ent.x - player.x;
+                const dy = ent.y - player.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if(dist < 100) {
+                    ent.vx += dx * 0.01;
+                    ent.vy += dy * 0.01;
+                }
+            }
+        });
+
+        // Update Debug UI
+        ui.fps.innerText = Math.round(1000 / deltaTime);
+        ui.x.innerText = Math.floor(player.x);
+        ui.y.innerText = Math.floor(player.y);
+        ui.ents.innerText = entities.length;
+    }
+
+    function draw() {
+        ctx.fillStyle = '#050505';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw Player Mongle
+        ctx.strokeStyle = player.active ? '#fff' : '#00ff41';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Draw Entities
+        ctx.fillStyle = '#00ff41';
+        entities.forEach(ent => {
+            ctx.beginPath();
+            ctx.arc(ent.x, ent.y, ent.r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+
+    function loop(timestamp) {
+        const deltaTime = timestamp - lastTime;
+        lastTime = timestamp;
+
+        update(deltaTime);
+        draw();
+        requestAnimationFrame(loop);
+    }
+
+    window.addEventListener('resize', init);
+    init();
+    requestAnimationFrame(loop);
+</script>
+</body>
+</html>

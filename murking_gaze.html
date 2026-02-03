@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lurking Gaze</title>
+  <style>
+    body { margin:0; overflow:hidden; background:#000; font-family:'Courier New',monospace; color:#f22; cursor:none; }
+    #title, #death { position:fixed; inset:0; background:rgba(0,0,0,0.98); display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; z-index:10000; cursor:pointer; backdrop-filter:blur(8px); pointer-events:all; }
+    #title h1 { font-size:7rem; letter-spacing:0.3em; margin-bottom:2rem; animation:flicker 4s infinite; text-shadow:0 0 50px #800; }
+    @keyframes flicker { 0%,19%,21%,23%,25%,54%,56%,100% {opacity:1;} 20%,22%,24%,55% {opacity:0.3;} }
+    #title p { font-size:1.7rem; margin:1rem 0; opacity:0.9; }
+    #ui { position:fixed; top:1.5rem; left:50%; transform:translateX(-50%); font-size:1.6rem; z-index:9999; text-shadow:0 0 12px #000; pointer-events:none; }
+    #sanityBar { width:420px; height:34px; background:#111; border:3px solid #600; border-radius:10px; overflow:hidden; margin-top:0.6rem; box-shadow:0 0 35px #c00; }
+    #sanityFill { height:100%; background:linear-gradient(90deg,#c00,#ff6600,#ffcc00); transition:width 0.25s; box-shadow:inset 0 0 18px #fff; }
+    body.low #sanityFill { animation:pulse 0.7s infinite alternate; }
+    @keyframes pulse { to { box-shadow:0 0 50px #f00,inset 0 0 30px #f00; } }
+    #crosshair { position:fixed; inset:0; margin:auto; width:26px; height:26px; pointer-events:none; background:radial-gradient(circle,transparent 40%,#f008 45%,#f008 55%,transparent 60%); border-radius:50%; z-index:9998; opacity:0.92; transition:all 0.3s; }
+    body.low #crosshair { width:34px; height:34px; opacity:1; animation:crossPulse 0.5s infinite; }
+    @keyframes crossPulse { 0%,100% {transform:scale(1);} 50% {transform:scale(1.6) rotate(180deg);} }
+    #status { position:fixed; bottom:1rem; left:50%; transform:translateX(-50%); font-size:1.2rem; color:#0f0; background:rgba(0,0,0,0.7); padding:0.6rem 1.8rem; border-radius:8px; z-index:9999; pointer-events:none; }
+    #death { display:none; }
+    #death h1 { font-size:8rem; animation:shake 0.6s infinite; }
+    @keyframes shake { 0%,100% {transform:translateX(0);} 25% {transform:translateX(-15px);} 75% {transform:translateX(15px);} }
+    button { margin-top:3rem; padding:1.5rem 5rem; background:#600; color:#fff; border:3px solid #c00; font-size:2rem; cursor:pointer; border-radius:10px; }
+    button:hover { background:#800; transform:scale(1.1); }
+  </style>
+</head>
+<body>
+
+<div id="title">
+  <h1>LURKING GAZE</h1>
+  <p>Click anywhere or press SPACE to start</p>
+  <p>WASD / Arrows → Move</p>
+  <p>Mouse → Look (should lock automatically)</p>
+  <p><strong>DO NOT look directly at the green things</strong></p>
+</div>
+
+<div id="death">
+  <h1>THE GAZE CONSUMES</h1>
+  <p>Your mind is shattered.</p>
+  <button onclick="location.reload()">TRY AGAIN</button>
+</div>
+
+<div id="ui">
+  SANITY <div id="sanityBar"><div id="sanityFill" style="width:100%"></div></div>
+</div>
+<div id="crosshair"></div>
+<div id="status">Click to start...</div>
+
+<!-- Use a version where PointerLockControls still works globally -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/PointerLockControls.min.js"></script>
+
+<script>
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x080808);
+scene.fog = new THREE.FogExp2(0x030303, 0.024);
+
+const camera = new THREE.PerspectiveCamera(76, innerWidth/innerHeight, 0.1, 100);
+camera.position.set(0,1.6,5);
+
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+const controls = new THREE.PointerLockControls(camera, renderer.domElement);
+scene.add(controls.getObject());
+
+const title = document.getElementById('title');
+const death = document.getElementById('death');
+const status = document.getElementById('status');
+const sanityFill = document.getElementById('sanityFill');
+
+let move = {f:false,b:false,l:false,r:false};
+const SPEED = 8;
+let sanity = 100;
+let gameOver = false;
+let prev = performance.now();
+
+// Hide title and request lock
+function startGame() {
+  title.style.display = 'none';
+  status.textContent = 'Locking mouse... (click again if needed)';
+  renderer.domElement.requestPointerLock();
+  renderer.domElement.focus();
+}
+
+title.addEventListener('click', startGame);
+document.addEventListener('keydown', e => {
+  if (title.style.display !== 'none' && (e.code === 'Space' || e.code === 'Enter')) {
+    startGame();
+    e.preventDefault();
+  }
+});
+
+document.addEventListener('pointerlockchange', () => {
+  if (document.pointerLockElement === renderer.domElement) {
+    status.textContent = 'Locked – DO NOT look back!';
+    status.style.color = '#0f0';
+  } else if (!gameOver) {
+    status.textContent = 'Mouse unlocked – click to lock';
+    status.style.color = '#ff0';
+  }
+});
+
+// Movement keys
+document.addEventListener('keydown', e => {
+  switch(e.code){
+    case 'KeyW': case 'ArrowUp': move.f = true; break;
+    case 'KeyS': case 'ArrowDown': move.b = true; break;
+    case 'KeyA': case 'ArrowLeft': move.l = true; break;
+    case 'KeyD': case 'ArrowRight': move.r = true; break;
+    case 'Escape': document.exitPointerLock(); break;
+  }
+});
+document.addEventListener('keyup', e => {
+  switch(e.code){
+    case 'KeyW': case 'ArrowUp': move.f = false; break;
+    case 'KeyS': case 'ArrowDown': move.b = false; break;
+    case 'KeyA': case 'ArrowLeft': move.l = false; break;
+    case 'KeyD': case 'ArrowRight': move.r = false; break;
+  }
+});
+
+// World + enemies
+scene.add(new THREE.AmbientLight(0x222244, 0.4));
+const lantern = new THREE.PointLight(0xffaa88, 2.2, 25, 2);
+scene.add(lantern);
+
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(200,200),
+  new THREE.MeshStandardMaterial({color:0x0a0a0a})
+);
+floor.rotation.x = -Math.PI/2;
+scene.add(floor);
+
+// Enemies (green cylinders that chase and drain sanity if looked at)
+const enemies = [];
+for (let i = 0; i < 5; i++) {
+  const enemy = new THREE.Mesh(
+    new THREE.CylinderGeometry(1, 1, 4, 8),
+    new THREE.MeshStandardMaterial({color: 0x004400, emissive: 0x002200, emissiveIntensity: 0.8})
+  );
+  enemy.position.set((Math.random()-0.5)*60, 2, -20 - i*10);
+  scene.add(enemy);
+  enemies.push(enemy);
+}
+
+// Animate
+function animate(t) {
+  requestAnimationFrame(animate);
+  const dt = (t - prev)/1000;
+  prev = t;
+
+  lantern.position.copy(camera.position);
+  lantern.position.y -= 0.4;
+
+  if (!gameOver) {
+    const dir = new THREE.Vector3();
+    const fwd = new THREE.Vector3(); camera.getWorldDirection(fwd); fwd.y = 0; fwd.normalize();
+    const right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0,1,0)).normalize();
+
+    if (move.f) dir.addScaledVector(fwd, SPEED * dt);
+    if (move.b) dir.addScaledVector(fwd, -SPEED * 0.6 * dt);
+    if (move.l) dir.addScaledVector(right, -SPEED * 0.8 * dt);
+    if (move.r) dir.addScaledVector(right, SPEED * 0.8 * dt);
+
+    controls.moveForward(dir.z);
+    controls.moveRight(dir.x);
+
+    // Enemies chase
+    let lookingAtAny = false;
+    enemies.forEach(e => {
+      const toPlayer = new THREE.Vector3().subVectors(camera.position, e.position).normalize();
+      e.position.add(toPlayer.multiplyScalar(3 * dt));
+
+      // Check if looking at enemy
+      const toEnemy = new THREE.Vector3().subVectors(e.position, camera.position).normalize();
+      if (fwd.dot(toEnemy) > 0.75 && camera.position.distanceTo(e.position) < 25) {
+        lookingAtAny = true;
+      }
+    });
+
+    // Sanity drain
+    sanity -= lookingAtAny ? 60 * dt : 8 * dt;
+    sanity = Math.max(0, sanity);
+    sanityFill.style.width = sanity + '%';
+
+    if (sanity < 45) document.body.classList.add('low');
+    else document.body.classList.remove('low');
+
+    if (sanity <= 0) {
+      gameOver = true;
+      death.style.display = 'flex';
+    }
+  }
+
+  renderer.render(scene, camera);
+}
+animate(performance.now());
+
+// Resize
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>
